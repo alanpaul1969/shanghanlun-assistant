@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}服藥觀察 S4-1{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('inference') }}">← Inference</a>
+  <span style="margin-left: var(--space-3);">服藥觀察 · {{ obs.formula }} · ⏱ Day {{ obs.day }}</span>
+  <span class="muted" style="margin-left: auto;">v0.2.4 · 寫 session['medication_log']</span>
+</div>
+
+<h1><img src="{{ url_for('static', filename='img/icons/P29_observation_log.png') }}" style="height: 30px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">{{ obs.formula }} — 服藥觀察 (S4-1)</h1>
+
+{% if rag_analysis %}
+<div class="card" style="border-left: 4px solid var(--brand-500); padding: var(--space-3); margin-bottom: var(--space-3);">
+  <div class="card-title">典籍方證比較與加減建議
+    <span class="muted" style="font-size: 11px; font-weight: 400;">(RAG 七典 × LLM 分析)</span>
+  </div>
+
+  {% if rag_analysis.relevance %}
+  <div style="font-size: 13px; line-height: 1.7; margin-bottom: var(--space-3);">
+    <strong>相關性分析：</strong>{{ rag_analysis.relevance }}
+  </div>
+  {% endif %}
+
+  {% if rag_analysis.suggestions %}
+  <div style="font-size: 13px;">
+    <strong>加減項建議：</strong>
+    <ul style="margin: var(--space-2) 0 0 0; padding-left: 18px;">
+      {% for s in rag_analysis.suggestions %}
+      <li style="margin-bottom: 4px;">
+        <span class="pill {% if s.type == '加' %}pill-success{% elif s.type == '減' %}pill-danger{% else %}pill-info{% endif %}">{{ s.type }}</span>
+        <strong>{{ s.item }}</strong>
+        {% if s.reason %}<span style="color: var(--text-secondary);">— {{ s.reason }}</span>{% endif %}
+        {% if s.source %}<br><span class="muted" style="font-size: 11px; margin-left: 34px;">出處：{{ s.source }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if rag_hits %}
+  <details style="margin-top: var(--space-3);">
+    <summary style="cursor: pointer; font-size: 12px; color: var(--text-muted);">檢索到的典籍段落 ({{ rag_hits|length }})</summary>
+    {% for h in rag_hits %}
+    <div style="margin-top: 6px; font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+      <strong>{{ h.book }}</strong>·{{ h.chapter }} <span class="muted">{{ "%.0f"|format(h.score * 100) }}%</span><br>
+      {{ h.text[:300] }}{% if h.text|length > 300 %}…{% endif %}
+    </div>
+    {% endfor %}
+  </details>
+  {% endif %}
+</div>
+{% elif rag_hits %}
+<div class="card" style="padding: var(--space-3); margin-bottom: var(--space-3);">
+  <div class="card-title">典籍檢索段落 <span class="muted" style="font-size: 11px;">(LLM 分析不可用)</span></div>
+  {% for h in rag_hits %}
+  <details style="margin-bottom: var(--space-2); font-size: 13px;">
+    <summary style="cursor: pointer;"><strong>{{ h.book }}</strong>·{{ h.chapter }}
+      <span class="muted" style="font-size: 11px;">{{ "%.0f"|format(h.score * 100) }}%</span></summary>
+    <div style="margin-top: 4px; color: var(--text-secondary); line-height: 1.7;">{{ h.text[:400] }}</div>
+  </details>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if med_log %}
+<div class="card" style="border-left: 4px solid var(--success-500);">
+  <div class="card-title">📋 已記錄 {{ med_log|length }} 筆</div>
+  {% for log in med_log %}
+  <div style="font-size: 12px; color: var(--text-secondary); padding: 4px 0; border-bottom: 1px solid var(--border);">
+    <strong>{{ log.node }}</strong> · {{ log.sweat }} · 症狀{{ log.symptom_change }} · 體溫 {{ log.temperature }}°C 脈 {{ log.pulse_rate }} 痛 {{ log.pain_scale }}/10
+    {% if log.notes %}<br><span class="muted">{{ log.notes }}</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-title">Prescription & dosing</div>
+  <ol class="observe-sop" style="padding: 0; margin: 0;">
+    {% for step in obs.sop %}
+    <li class="{% if '中病即止' in step.text or 'STOP' in step.text %}stop{% endif %}">{{ step.text }}</li>
+    {% endfor %}
+  </ol>
+  <div class="stop-callout">
+    <strong>⏹ STOP conditions:</strong>
+    {% for c in obs.stop_conditions %}
+    <span class="pill pill-danger">{{ c }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('observe') }}" id="observation-form">
+<div class="card">
+  <div class="card-title">Observation timeline — 勾選目前節點</div>
+  <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+    {% for n in obs.timeline_nodes %}
+    <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+      <input type="radio" name="node" value="{{ n.label }}" required> {{ n.label }} ({{ n.at }})
+    </label>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">汗出狀態 (中病即止核心)</div>
+  <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+    {% for v, label in [('已汗', '✓ 已汗 (中病 → 停服)'), ('微汗', '微汗 (將癒)'), ('未汗', '未汗 (續服)'), ('大汗', '⚠ 大汗不止 (救逆)')] %}
+    <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+      <input type="radio" name="sweat" value="{{ v }}" required> {{ label }}
+    </label>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">症狀變化</div>
+  <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+    {% for v, label in [('better', '改善 ↓'), ('same', '持平 →'), ('worse', '加重 ↑ (救逆)')] %}
+    <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+      <input type="radio" name="symptom_change" value="{{ v }}" required> {{ label }}
+    </label>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Vital signs</div>
+  <div style="display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center;">
+    <div>
+      <label class="muted" style="font-size: 12px;">體溫 °C</label>
+      <input type="number" name="temperature" step="0.1" min="35" max="42" value="37.5" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;">
+    </div>
+    <div>
+      <label class="muted" style="font-size: 12px;">脈率 /分</label>
+      <input type="number" name="pulse_rate" min="30" max="200" value="80" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;">
+    </div>
+    <div>
+      <label class="muted" style="font-size: 12px;">頭痛 0-10</label>
+      <input type="number" name="pain_scale" min="0" max="10" value="3" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">備註 (自由記錄)</div>
+  <textarea name="notes" rows="2" placeholder="例: 服後 30 分微汗、頭痛減輕、無心煩" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;"></textarea>
+</div>
+
+<div class="escalation">
+  <div class="head">🚨 Escalation (符合任一條件請勾選)</div>
+  <ul>
+    {% for e in obs.escalation %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+  <label style="display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); color: #991B1B; font-weight: 600;">
+    <input type="checkbox" name="escalation_triggered" value="yes">
+    <img src="{{ url_for('static', filename='img/icons/P28_rescue.png') }}" style="height: 18px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;"> 觸發 escalation → 進救逆模式
+  </label>
+</div>
+
+<div style="display: flex; gap: var(--space-2); margin-top: var(--space-4); justify-content: space-between;">
+  <a href="{{ url_for('inference') }}" class="btn btn-secondary">← Inference</a>
+  <div style="display: flex; gap: var(--space-2);">
+    <button type="submit" class="btn btn-primary">+ 記錄觀察</button>
+    <a href="{{ url_for('observe_modify') }}" class="btn btn-secondary">Trigger modification</a>
+  </div>
+</div>
+</form>
+
+<div class="card">
+  <div class="card-title">Vital signs chart (demo {{ obs.vitals.temperature|length }} 筆)</div>
+  <div class="vital-chart">
+    <div class="label">體溫 °C</div>
+    <svg class="svg" viewBox="0 0 400 60" preserveAspectRatio="none">
+      <polyline class="line" points="0,30 100,25 200,20 300,15 400,10"/>
+    </svg>
+  </div>
+</div>
+{% endblock %}

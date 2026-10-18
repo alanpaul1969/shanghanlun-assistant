@@ -1,0 +1,258 @@
+{
+  "_comment": "v0.2.3 Phase 5 - 病史-方證互動規則\n\n邏輯:\n- 從 patient.history 解析疾病 (例如 '高血壓 5 年')\n- 從 patient.medication 解析用藥 (例如 'Amlodipine 5mg qd')\n- 每條規則 match 疾病/用藥 → 列出禁用/慎用方證\n- 套到 _apply_patient_modifiers → 每個 prescription 顯示 modifier\n\n資料來源: 雲端中醫 769 + 02-UI-UX規劃 S2-1 病人基本資料 + 傷寒論 22 條注意事項\nv0.2.3 範圍 12 條, v0.3 擴到 30+",
+  "rules": [
+    {
+      "id": "htn-mahuang",
+      "match_diseases": [
+        "高血壓",
+        "hypertension",
+        "HTN"
+      ],
+      "match_keywords": [
+        "amlodipine",
+        "nifedipine",
+        "norvasc",
+        "脈優",
+        "壓平樂"
+      ],
+      "modifiers": [
+        "⚠ 高血壓 — 麻黃 / 葛根 (含麻黃) 慎用: 升壓、心悸副作用",
+        "⚠ 高血壓 — 五苓散 利水可能干擾降壓藥代謝",
+        "⚠ 高血壓 — 真武湯 溫陽可能波動血壓, 監測"
+      ],
+      "severity": "warn"
+    },
+    {
+      "id": "diabetes-wuling",
+      "match_diseases": [
+        "糖尿病",
+        "diabetes",
+        "DM",
+        "高血糖"
+      ],
+      "match_keywords": [
+        "metformin",
+        "glucophage",
+        "glipizide",
+        "Januvia",
+        "糖必達",
+        "美妥妥"
+      ],
+      "modifiers": [
+        "⚠ 糖尿病 — 五苓散 滲利可能影響血糖, 監測空腹血糖",
+        "⚠ 糖尿病 — 白虎湯 大寒之劑 + 口渴症狀可能誤導 (糖尿病三多本有口渴)",
+        "⚠ 糖尿病 — 小柴胡湯 對糖代謝影響不大, 但應監測"
+      ],
+      "severity": "warn"
+    },
+    {
+      "id": "heart-fuzi",
+      "match_diseases": [
+        "心臟病",
+        "冠心病",
+        "心衰竭",
+        "CHF",
+        "arrhythmia",
+        "心律不整",
+        "心房顫動",
+        "支架",
+        "stent",
+        "PTCA",
+        "心導管",
+        "冠狀動脈"
+      ],
+      "match_keywords": [
+        "digoxin",
+        "amiodarone",
+        "warfarin",
+        "保栓通",
+        "可邁丁",
+        "毛地黃",
+        "aspirin",
+        "aspirin 100",
+        "clopidogrel",
+        "brilinta",
+        "阿斯匹靈"
+      ],
+      "modifiers": [
+        "⚠ 心臟病 — 麻黃 興奮交感神經 → 心悸、心律不整, 禁用",
+        "⚠ 心臟病 — 附子 (四逆湯/真武湯) 烏頭鹼毒性 + 強心 → 與毛地黃競爭, 監測心律",
+        "⚠ 心臟病 — 桂枝湯 桂枝量 1-2 兩已可能加速心率, 慎用"
+      ],
+      "severity": "critical"
+    },
+    {
+      "id": "kidney-bushi",
+      "match_diseases": [
+        "腎病",
+        "慢性腎衰竭",
+        "洗腎",
+        "CKD",
+        "透析",
+        "腎功能不全"
+      ],
+      "match_keywords": [
+        "furosemide",
+        "lasix",
+        "ramipril",
+        "tricor",
+        "利尿劑",
+        "血管收縮素"
+      ],
+      "modifiers": [
+        "⚠ 腎病 — 五苓散 滲利可能加重電解質流失, 監測 K+",
+        "⚠ 腎病 — 真武湯 溫陽利水需小心水電解質平衡",
+        "⚠ 腎病 — 承氣湯 (大黃) 應慎用 (大黃含蒽醌, 長期使用傷腎)"
+      ],
+      "severity": "critical"
+    },
+    {
+      "id": "liver-chengqi",
+      "match_diseases": [
+        "肝病",
+        "肝硬化",
+        "B肝",
+        "C肝",
+        "脂肪肝",
+        "ALT高",
+        "AST高",
+        "慢性肝炎"
+      ],
+      "match_keywords": [],
+      "modifiers": [
+        "⚠ 肝病 — 承氣湯 (大承氣/小承氣/調胃承氣) 大黃加重肝負擔, 慎用",
+        "⚠ 肝病 — 柴胡 (小柴胡/大柴胡/柴胡桂枝) 應監測肝功能",
+        "⚠ 肝病 — 五苓散 對肝硬化腹水有效但需監測電解質"
+      ],
+      "severity": "warn"
+    },
+    {
+      "id": "pregnancy-caojun",
+      "match_diseases": [],
+      "match_keywords": [],
+      "match_sex": "F",
+      "match_age_min": 0,
+      "match_age_max": 50,
+      "modifiers": [
+        "⚠ 孕婦 — 大承氣湯/桃核承氣 峻下破瘀, 絕對禁用",
+        "⚠ 孕婦 — 抵當湯/下瘀血湯 破血逐瘀, 絕對禁用",
+        "⚠ 孕婦 — 十棗湯 攻逐水飲, 禁用",
+        "⚠ 孕婦 — 麻黃 興奮子宮收縮可能動胎氣, 慎用",
+        "⚠ 孕婦 — 桂枝 活血通經, 大劑慎用",
+        "⚠ 孕婦 — 附子 (四逆/真武) 烏頭鹼, 禁用"
+      ],
+      "severity": "critical"
+    },
+    {
+      "id": "elderly-fuzi",
+      "match_age_min": 70,
+      "modifiers": [
+        "⚠ 老年 — 大承氣/桃核承氣 峻下瀉下, 慎用防脫水",
+        "⚠ 老年 — 麻黃 興奮交感可能心悸失眠, 慎用",
+        "⚠ 老年 — 四逆湯/真武湯 溫陽過強可能血壓波動, 從小劑開始",
+        "⚠ 老年 — 承氣湯峻下需監測電解質"
+      ],
+      "severity": "warn"
+    },
+    {
+      "id": "child-ma-huang",
+      "match_age_min": 0,
+      "match_age_max": 6,
+      "modifiers": [
+        "⚠ 幼兒 — 麻黃 興奮中樞神經, 易致心悸失眠, 慎用",
+        "⚠ 幼兒 — 大承氣/桃核承氣 峻下, 絕對禁用",
+        "⚠ 幼兒 — 烏梅丸/四逆湯 需小劑量, 防烏頭鹼中毒"
+      ],
+      "severity": "critical"
+    },
+    {
+      "id": "glaucoma-ma-huang",
+      "match_diseases": [
+        "青光眼",
+        "眼壓高",
+        "glaucoma"
+      ],
+      "match_keywords": [
+        "眼壓",
+        "青光眼藥水",
+        "timolol",
+        "xalatan"
+      ],
+      "modifiers": [
+        "⚠ 青光眼 — 麻黃 散瞳可能眼壓升高, 禁用",
+        "⚠ 青光眼 — 葛根 (含麻黃) 慎用",
+        "⚠ 青光眼 — 柴胡 (升散) 可能影響眼壓, 慎用"
+      ],
+      "severity": "critical"
+    },
+    {
+      "id": "hyperthyroid-fuzi",
+      "match_diseases": [
+        "甲亢",
+        "甲狀腺亢進",
+        "甲狀腺機能亢進",
+        "hyperthyroid"
+      ],
+      "modifiers": [
+        "⚠ 甲亢 — 麻黃 含麻黃鹼加速代謝心跳, 慎用",
+        "⚠ 甲亢 — 柴胡 可能干擾甲狀腺功能, 慎用"
+      ],
+      "severity": "warn"
+    },
+    {
+      "id": "anticoagulant-tao-he",
+      "match_keywords": [
+        "warfarin",
+        "可邁丁",
+        "sintrom",
+        "heparin",
+        "eliquis",
+        "抗凝血",
+        "血栓"
+      ],
+      "modifiers": [
+        "⚠ 抗凝血中 — 桃核承氣湯/抵當湯 破血逐瘀, 與抗凝藥協作出血風險大增, 絕對禁用",
+        "⚠ 抗凝血中 — 桂枝茯苓丸 活血化瘀, 慎用加出血監測"
+      ],
+      "severity": "critical"
+    },
+    {
+      "id": "steroid-chai-hu",
+      "match_keywords": [
+        "prednisolone",
+        "methylprednisolone",
+        "predonine",
+        "類固醇",
+        "dexamethasone",
+        "美卓樂",
+        "普力多"
+      ],
+      "modifiers": [
+        "⚠ 類固醇 — 柴胡類方 (小柴胡/大柴胡) 與免疫抑制可能協作, 監測感染風險",
+        "⚠ 類固醇 — 五苓散 滲利可能加重類固醇水電解質紊亂"
+      ],
+      "severity": "warn"
+    },
+    {
+      "id": "ibs-stress-dai-shao",
+      "match_diseases": [
+        "腸躁症",
+        "大腸激躁",
+        "IBS",
+        "腸胃功能紊亂"
+      ],
+      "modifiers": [
+        "⚠ 腸躁 — 大承氣湯 峻下可能刺激腸蠕動 → 腹瀉加重, 慎用",
+        "⚠ 腸躁 — 半夏瀉心湯 寒熱錯雜對 IBS 反而有效, 首選",
+        "⚠ 腸躁 — 桂枝加芍藥湯 緩急止痛, IBS 適用"
+      ],
+      "severity": "info"
+    }
+  ],
+  "_meta": {
+    "v0.2.3_count": 12,
+    "_comment_severity": "critical=禁用/warn=慎用/info=首選",
+    "_comment_match_sex": "F=只 match 女生 (如 孕婦)",
+    "v0.3_plan": "擴到 30+ 條, 加 common drug 對照表 (NSAIDs/ACEi/ARB/抗生素/抗病毒 等)"
+  }
+}

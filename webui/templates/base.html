@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}傷寒論助手{% endblock %} · Shanghan Lun Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shanghanlun.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/P1_app_icon.png') }}">
+</head>
+<body>
+  <header class="app-nav">
+    <div class="brand">
+      <div class="logo"></div>
+      <span>{{ t('傷寒論助手') }}</span>
+    </div>
+    <nav>
+      <a href="{{ url_for('home') }}"        class="{% if request.path == '/' %}active{% endif %}">{{ t('Dashboard') }}</a>
+      <a href="{{ url_for('intake_step', step='inquiry') }}"  class="{% if '/intake' in request.path %}active{% endif %}">{{ t('問診') }}</a>
+      <a href="{{ url_for('inference') }}"        class="{% if request.path == '/inference' %}active{% endif %}">{{ t('推論') }}</a>
+      <a href="{{ url_for('observe') }}"          class="{% if '/observe' in request.path %}active{% endif %}">{{ t('服藥觀察') }}</a>
+      <a href="{{ url_for('library') }}"          class="{% if request.path == '/library' %}active{% endif %}">{{ t('Library') }}</a>
+    </nav>
+    <div style="display: flex; align-items: center; gap: var(--space-2);">
+      <a href="{{ url_for('set_lang', lang='zh') }}" class="version-pill {% if session.get('lang', 'zh') == 'zh' %}active{% endif %}" style="font-size: 11px;">中</a>
+      <a href="{{ url_for('set_lang', lang='en') }}" class="version-pill {% if session.get('lang') == 'en' %}active{% endif %}" style="font-size: 11px;">EN</a>
+      <a href="{{ url_for('set_lang', lang='ja') }}" class="version-pill {% if session.get('lang') == 'ja' %}active{% endif %}" style="font-size: 11px;">日</a>
+      <span class="user">👤 Alan</span>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    傷寒論助手 WebUI {{ app_version }} · clinical × SaaS dashboard design
+    &nbsp;·&nbsp;
+    <a href="{{ url_for('healthz') }}" style="color: var(--text-muted);">healthz</a>
+  </footer>
+</body>
+</html>

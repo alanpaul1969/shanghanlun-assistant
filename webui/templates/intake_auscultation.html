@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}聞診 S2-4{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_inspection') }}">← 望診</a>
+  <span style="margin-left: var(--space-3);">聞診 (Auscultation & Olfaction) · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: auto;">v0.2.3 · 寫 session['observations']</span>
+</div>
+
+<h1>聞診 (S2-4)</h1>
+<p class="muted">中醫「聞」: 聽聲音 + 嗅氣味。資料會自動套用到推論引擎</p>
+
+<form method="POST" action="{{ url_for('intake_auscultation') }}" id="auscultation-form">
+<div class="inquiry-layout">
+<div class="inquiry-main">
+
+  <div class="card">
+    <div class="card-title">① 語聲</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常', '正常'), ('低微', '低微 (虛寒)'), ('洪亮', '洪亮 (實熱)'), ('嘶啞', '嘶啞 (肺陰虛)'), ('重濁', '重濁 (濕)'), ('無力', '無力 (氣虛)'), ('咳重', '咳重 (肺熱)'), ('呻吟', '呻吟 (痛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="voice" value="{{ v }}" {% if obs.get('voice') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">② 語言</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('清晰', '清晰 (正常)'), ('譫語', '譫語 (陽明熱入心包)'), ('鄭聲', '鄭聲 (虛)'), ('獨語', '獨語 (心氣虛)'), ('失語', '失語 (風痰阻絡)'), ('狂言', '狂言 (熱入陽明)'), ('謇澀', '謇澀 (風痰)'), ('呻吟', '呻吟 (痛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="speech" value="{{ v }}" {% if obs.get('speech') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">③ 咳嗽</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('無', '無'), ('輕咳', '輕咳 (表證)'), ('重咳', '重咳 (肺熱)'), ('乾咳', '乾咳 (肺陰虛)'), ('痰咳', '痰咳 (痰濕)'), ('夜咳', '夜咳 (陰虛)'), ('晨咳', '晨咳 (痰濕)'), ('喘咳', '喘咳 (肺氣虛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="cough" value="{{ v }}" {% if obs.get('cough') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">④ 呼吸</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常', '正常'), ('氣短', '氣短 (氣虛)'), ('喘', '喘 (肺氣上逆)'), ('促', '促 (熱)'), ('微弱', '微弱 (少陰/陽虛)'), ('咳嗽', '咳嗽 (肺)'), ('痰鳴', '痰鳴 (痰阻)'), ('鼻鼾', '鼻鼾 (濕)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="breathing" value="{{ v }}" {% if obs.get('breathing') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⑤ 氣味</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('無', '無'), ('酸腐', '酸腐 (食積)'), ('腥臭', '腥臭 (濕熱)'), ('痰腥', '痰腥 (肺膿)'), ('血腥', '血腥 (血證)'), ('汗臭', '汗臭 (濕熱)'), ('矢氣', '矢氣臭 (熱結)'), ('腐臭', '腐臭 (癰疽)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="odor" value="{{ v }}" {% if obs.get('odor') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+    <a href="{{ url_for('intake_inspection') }}" class="btn btn-secondary">← Back</a>
+    <button type="submit" class="btn btn-primary">Continue → 問診</button>
+  </div>
+
+</div>
+
+<aside class="inquiry-sidebar">
+  <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">聞診 v2 spec</h3>
+  <div class="muted" style="font-size: 13px; line-height: 1.7;">
+    <strong>聞</strong> = 聽聲音 + 嗅氣味:
+    <ul style="margin: 8px 0; padding-left: 18px;">
+      <li><strong>聲音</strong>: 低微 = 虛寒; 洪亮 = 實熱; 嘶啞 = 陰虛</li>
+      <li><strong>語言</strong>: 譫語 = 陽明熱; 鄭聲 = 虛</li>
+      <li><strong>咳嗽</strong>: 乾咳 = 陰虛; 痰咳 = 痰濕</li>
+      <li><strong>呼吸</strong>: 氣短 = 氣虛; 微弱 = 少陰</li>
+      <li><strong>氣味</strong>: 酸腐 = 食積; 腥臭 = 濕熱</li>
+    </ul>
+  </div>
+  <div class="card-title" style="margin-top: var(--space-4);">已收表徵</div>
+  <div class="muted" style="font-size: 12px;">
+    {% for k, v in obs.items() %}<div>{{ k }}: {{ v }}</div>{% endfor %}
+  </div>
+</aside>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}⚡ 快診{% endblock %}
+
+{% block content %}
+<details style="margin-bottom: var(--space-3);">
+  <summary style="cursor: pointer; font-size: 13px; color: var(--text-muted);">📖 什麼是八綱辨證？（表裡·寒熱·虛實·陰陽）</summary>
+  <img src="{{ url_for('static', filename='img/S3x_bagang_guide.png') }}" alt="八綱辨證" style="width: 100%; border-radius: var(--radius-lg); margin-top: var(--space-2);">
+</details>
+<div class="step-progress">
+  <a href="{{ url_for('home') }}">← Home</a>
+  <span style="margin-left: var(--space-3);">⚡ 快診 · 八綱 4 題 · 約 2 分鐘</span>
+</div>
+
+<h1>⚡ 快診</h1>
+<p class="muted">中醫正統思路: <strong>先辨八綱、再定六經</strong>。4 個判斷 → 直接推論。想要完整病歷記錄請用 <a href="{{ url_for('intake_root') }}">詳診</a>。</p>
+
+<form method="POST" action="{{ url_for('quick') }}" id="quick-form">
+
+<div class="card">
+  <div class="card-title">主訴 (一句話, 選填)</div>
+  <input type="text" name="chief_complaint" placeholder="例: 頭痛發燒 3 天" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 16px; font-family: inherit;">
+</div>
+
+<div class="card">
+  <div class="card-title">① 病位 — 病在身體哪一層?</div>
+  <div class="symptom-options">
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; margin-bottom: 6px;">
+      <input type="radio" name="b_wei" value="表" required checked>
+      <span><strong>表</strong> — 體表症狀為主: 惡寒發熱、頭痛、鼻塞、膚表病變 <span class="muted">(太陽)</span></span>
+    </label>
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; margin-bottom: 6px;">
+      <input type="radio" name="b_wei" value="半表半裡">
+      <span><strong>半表半裡</strong> — 胸脇滿悶、口苦、往來寒熱 <span class="muted">(少陽)</span></span>
+    </label>
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;">
+      <input type="radio" name="b_wei" value="裡">
+      <span><strong>裡</strong> — 內臟症狀為主: 腹痛、便秘/腹瀉、嘔吐、明顯口渴 <span class="muted">(陽明/太陰/少陰/厥陰)</span></span>
+    </label>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">② 寒熱 — 身體偏熱還是偏寒?</div>
+  <div class="symptom-options">
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; margin-bottom: 6px;">
+      <input type="radio" name="b_hanre" value="熱" required checked>
+      <span><strong>熱</strong> — 發熱想喝冷水、面紅、尿黃、便硬、舌紅苔黃</span>
+    </label>
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; margin-bottom: 6px;">
+      <input type="radio" name="b_hanre" value="寒">
+      <span><strong>寒</strong> — 怕冷想喝熱水、面白、尿清、便軟、舌淡苔白</span>
+    </label>
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;">
+      <input type="radio" name="b_hanre" value="寒熱錯雜">
+      <span><strong>寒熱錯雜</strong> — 上熱下寒 (口渴煩躁但腹瀉肢冷) <span class="muted">(厥陰)</span></span>
+    </label>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">③ 虛實 — 體力對抗疾病的能力?</div>
+  <div class="symptom-options">
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; margin-bottom: 6px;">
+      <input type="radio" name="b_xushi" value="實" required checked>
+      <span><strong>實</strong> — 聲音洪亮、有力、拒按、新病 <span class="muted">(陽明/太陽)</span></span>
+    </label>
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; margin-bottom: 6px;">
+      <input type="radio" name="b_xushi" value="虛">
+      <span><strong>虛</strong> — 聲低無力、倦怠、喜按、久病 <span class="muted">(太陰/少陰)</span></span>
+    </label>
+    <label style="display: flex; gap: var(--space-2); padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;">
+      <input type="radio" name="b_xushi" value="不確定">
+      <span><strong>不確定</strong></span>
+    </label>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">④ 嚴重度 (裡寒虛時區分太陰/少陰)</div>
+  <div class="symptom-options" style="display: flex; gap: var(--space-2);">
+    <label style="display: flex; align-items: center; gap: 4px; padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;">
+      <input type="radio" name="b_severity" value="輕" checked> 輕 (還能活動)
+    </label>
+    <label style="display: flex; align-items: center; gap: 4px; padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;">
+      <input type="radio" name="b_severity" value="重"> 重 (臥床/精神很差/肢冷)
+    </label>
+  </div>
+</div>
+
+<div style="display: flex; gap: var(--space-2); margin-top: var(--space-4); justify-content: space-between;">
+  <a href="{{ url_for('home') }}" class="btn btn-secondary">← Home</a>
+  <button type="submit" class="btn btn-primary btn-lg">⚡ 立即推論 →</button>
+</div>
+</form>
+
+<style>
+.symptom-options label:has(input:checked) { border-color: var(--brand-600); background: var(--brand-50); }
+</style>
+{% endblock %}

@@ -1,0 +1,12 @@
+# 大檔/产物
+corpus/tcm-ancient-books/
+corpus/rag_vectors.npy
+webui/static/img/v1_qwen_archive/
+__pycache__/
+*.pyc
+.venv/
+*.db
+*.db-*
+nohup.out
+.DS_Store
+corpus/rag_chunks.json

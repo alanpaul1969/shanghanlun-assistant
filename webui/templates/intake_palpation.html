@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}切診 S2-6{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_step', step='inquiry') }}">← 問診</a>
+  <span style="margin-left: var(--space-3);">切診 (Palpation / Pulse) · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: auto;">v0.2.3 · 寫 session['observations']</span>
+</div>
+
+<h1>切診 (S2-6)</h1>
+<p class="muted">中醫「切」核心是脈診 + 腹診 + 膚診。資料會自動套用到推論引擎</p>
+
+<form method="POST" action="{{ url_for('intake_palpation') }}" id="palpation-form">
+<div class="inquiry-layout">
+<div class="inquiry-main">
+
+  <div class="card">
+    <div class="card-title">① 脈象</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% set pulse_options = [
+        ('浮', '浮 (表證)'),
+        ('沉', '沉 (裡證)'),
+        ('遲', '遲 (寒)'),
+        ('數', '數 (熱)'),
+        ('虛', '虛 (氣虛)'),
+        ('實', '實 (實證)'),
+        ('滑', '滑 (痰濕)'),
+        ('澀', '澀 (血瘀)'),
+        ('弦', '弦 (少陽/痛)'),
+        ('緊', '緊 (寒/痛)'),
+        ('緩', '緩 (濕)'),
+        ('弱', '弱 (虛)'),
+        ('洪', '洪 (熱盛)'),
+        ('細', '細 (氣血虛)'),
+        ('微', '微 (陽虛)'),
+        ('結代', '結代 (心氣虛)'),
+      ] %}
+      {% for v, label in pulse_options %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="pulse" value="{{ v }}" {% if obs.get('pulse') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+    <div style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border);">
+      <div style="font-size: 13px; font-weight: 600; color: var(--brand-600); margin-bottom: 6px;">複合脈 (臨床常態, 可多選疊加)</div>
+      <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+        {% for v, label in [('浮緊', '浮緊 (太陽傷寒→麻黃)'), ('浮緩', '浮緩 (太陽中風→桂枝)'), ('沉細', '沉細 (少陰→四逆)'), ('弦滑', '弦滑 (少陽痰濕→小柴胡)'), ('洪大', '洪大 (陽明→白虎)'), ('沉遲', '沉遲 (裡寒)'), ('浮數', '浮數 (表熱)'), ('結代', '結代 (心氣虛→炙甘草)')] %}
+        <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+          <input type="radio" name="pulse_combo" value="{{ v }}" {% if obs.get('pulse_combo') == v %}checked{% endif %}> {{ label }}
+        </label>
+        {% endfor %}
+      </div>
+      <div class="muted" style="font-size: 12px; margin-top: 4px;">選複合脈時, 單脈欄可留空（複合脈優先, 引擎兩脈分數疊加）</div>
+    </div>
+    <div class="muted" style="font-size: 12px; margin-top: 4px;">⚠ 自我脈診精度有限, 臨床以中醫師把脈為主</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">② 脈率 (選填)</div>
+    <div style="display: flex; gap: var(--space-2); align-items: center;">
+      <input type="number" name="pulse_count" min="30" max="200" value="{{ obs.get('pulse_count', 75) }}" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;"> 次/分
+      <span class="muted" style="font-size: 12px;">(正常 60-100; <60 遲; >100 數)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">③ 腹診</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('軟', '軟 (正常)'), ('硬', '硬 (實)'), ('脹', '脹 (氣滯)'), ('痛', '痛 (瘀血)'), ('喜按', '喜按 (虛)'), ('拒按', '拒按 (實)'), ('冷', '冷 (寒)'), ('熱', '熱 (熱)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="abdomen" value="{{ v }}" {% if obs.get('abdomen') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">④ 膚溫</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常', '正常'), ('熱', '熱 (陽明/表熱)'), ('涼', '涼 (陽虛)'), ('冰冷', '冰冷 (少陰/陽脫)'), ('四肢冷', '四肢冷 (陽虛)'), ('手足心熱', '手足心熱 (陰虛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="skin_temp" value="{{ v }}" {% if obs.get('skin_temp') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⑤ 膚潤</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('潤', '潤 (正常)'), ('乾', '乾 (陰虛)'), ('汗', '汗 (表虛/陽虛)'), ('盜汗', '盜汗 (陰虛)'), ('手足汗', '手足汗 (陽明)'), ('冷汗', '冷汗 (陽虛)'), ('黏', '黏 (濕)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="moisture" value="{{ v }}" {% if obs.get('moisture') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+    <a href="{{ url_for('intake_step', step='inquiry') }}" class="btn btn-secondary">← Back</a>
+    <button type="submit" class="btn btn-primary">Continue → 鑑別</button>
+  </div>
+
+</div>
+
+<aside class="inquiry-sidebar">
+  <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">切診 v2 spec</h3>
+  <div class="muted" style="font-size: 13px; line-height: 1.7;">
+    <strong>脈象 28 種</strong> 是中醫核心證據:
+    <ul style="margin: 8px 0; padding-left: 18px;">
+      <li><strong>浮緊</strong>: 太陽傷寒 → 麻黃湯</li>
+      <li><strong>浮緩</strong>: 太陽中風 → 桂枝湯</li>
+      <li><strong>洪大</strong>: 陽明 → 白虎湯</li>
+      <li><strong>弦</strong>: 少陽/痛 → 小柴胡</li>
+      <li><strong>沉細</strong>: 少陰 → 四逆湯</li>
+      <li><strong>結代</strong>: 心氣虛 → 炙甘草湯</li>
+    </ul>
+  </div>
+  <div class="card-title" style="margin-top: var(--space-4);">已收表徵</div>
+  <div class="muted" style="font-size: 12px;">
+    {% for k, v in obs.items() %}<div>{{ k }}: {{ v }}</div>{% endfor %}
+  </div>
+</aside>
+</div>
+</form>
+{% endblock %}

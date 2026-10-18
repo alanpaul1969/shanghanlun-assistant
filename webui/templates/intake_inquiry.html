@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}問診 S2-5（核心）{% endblock %}
+
+{% block content %}
+<img src="{{ url_for('static', filename='img/S25_wen_inquiry.png') }}" alt="問診" style="width: 100%; max-height: 140px; object-fit: cover; object-position: right center; border-radius: var(--radius-lg); margin-bottom: var(--space-3);">
+<div class="step-progress">
+  <a href="{{ url_for('intake_root') }}">← 新診</a>
+  <span style="margin-left: var(--space-3);">Systematic inquiry 問 · Step {{ step }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: var(--space-3);">勾選完點「Continue → 切診」v0.2 真實推論</span>
+</div>
+
+<h1>問診 · 7 區分節</h1>
+<p class="muted">v0.2: 互斥組（同組只取 1）由 JS 自動 enforce · 勾選寫到 session → <code>/inference</code> 跑規則引擎</p>
+
+<div class="inquiry-layout">
+<div class="inquiry-main">
+
+<form method="POST" action="{{ url_for('intake_inquiry') }}" id="inquiry-form">
+{% set SECTIONS = [
+  ('寒熱', '寒熱型態', [
+    ('發熱_微熱_惡風', '發熱 + 微惡風（桂枝湯主證）'),
+    ('發熱_高燒_不惡寒', '發熱高燒 + 不惡寒（陽明 / 白虎）'),
+    ('往來寒熱', '往來寒熱（少陽 / 小柴胡）'),
+    ('惡寒_無熱', '惡寒 + 無熱（少陰 / 太陰）'),
+    ('四肢厥冷', '四肢厥冷（少陰 / 厥陰）'),
+    ('寒熱錯雜_上熱下寒', '寒熱錯雜 上熱下寒（厥陰 / 烏梅丸）'),
+  ]),
+  ('汗出', '汗出', [
+    ('無汗', '無汗（太陽傷寒 / 麻黃湯）'),
+    ('微汗', '微汗（太陽中風 / 桂枝湯）'),
+    ('自汗', '自汗（太陽 / 桂枝湯加附子）'),
+    ('大汗不止', '大汗不止（陽明 / 白虎加人參）'),
+    ('手足濈然汗出', '手足濈然汗出（陽明腑實 / 承氣湯）'),
+  ]),
+  ('頭身', '頭痛位置', [
+    ('頭痛_前額', '前頭痛（陽明 / 少陽）'),
+    ('頭痛_整頭', '整頭痛（太陽 / 桂枝湯）'),
+    ('頭痛_後頭_項強', '後頭痛 + 項強（太陽 / 桂枝加葛根）'),
+    ('頭暈', '頭暈（少陽 / 厥陰）'),
+    ('項背強', '項背強（太陽 / 桂枝加葛根）'),
+    ('身重', '身重（陽明 / 太陰）'),
+  ]),
+  ('飲食', '口渴', [
+    ('口渴_微渴', '微渴（少陽 / 少陰）'),
+    ('口渴_大渴欲冷飲', '大渴欲冷飲（陽明 / 白虎）'),
+    ('消渴_嚴重口渴', '消渴（厥陰 / 烏梅丸）'),
+    ('不渴', '不渴（太陰 / 少陰）'),
+    ('食不下_默默不欲食', '默默不欲食（少陽 / 小柴胡）'),
+    ('飢不欲食', '飢不欲食（厥陰 / 烏梅丸）'),
+  ]),
+  ('二便', '大便', [
+    ('便秘', '便秘（陽明 / 承氣湯）'),
+    ('腹瀉_自利', '自利（太陰 / 少陰）'),
+    ('腹瀉_下利清穀', '下利清穀（少陰 / 四逆湯）'),
+  ]),
+  ('二便', '小便', [
+    ('小便清長', '小便清長（少陰）'),
+    ('小便短赤', '小便短赤（陽明）'),
+  ]),
+  ('胸腹', None, [
+    ('胸脇苦滿', '胸脇苦滿（少陽 / 小柴胡）'),
+    ('腹滿時痛', '腹滿時痛（太陰）'),
+    ('腹脹_不痛', '腹脹不痛（太陰）'),
+    ('心下痞', '心下痞（半夏瀉心）'),
+    ('氣上撞心', '氣上撞心（厥陰 / 烏梅丸）'),
+  ]),
+  ('精神情緒', '精神狀態', [
+    ('煩躁_易怒', '煩躁易怒（少陽 / 陽明）'),
+    ('譫語_神智不清', '譫語（陽明）'),
+    ('但欲寐_嗜睡', '但欲寐（少陰 / 四逆湯）'),
+    ('精神萎靡', '精神萎靡（少陰 / 太陰）'),
+    ('口苦', '口苦（少陽）'),
+  ]),
+  ('噁心嘔吐', None, [
+    ('心煩喜嘔', '心煩喜嘔（少陽 / 小柴胡）'),
+    ('乾嘔', '乾嘔（少陽）'),
+    ('嘔不止', '嘔不止（少陽 / 陽明）'),
+  ]),
+  ('脈', '脈象', [
+    ('脈浮緩', '浮緩（太陽中風 / 桂枝湯）'),
+    ('脈浮緊', '浮緊（太陽傷寒 / 麻黃湯）'),
+    ('脈洪大', '洪大（陽明 / 白虎湯）'),
+    ('脈沉細', '沉細（少陰 / 四逆湯）'),
+    ('脈弦', '弦（少陽）'),
+  ]),
+] %}
+
+{% for category, mutex_group, items in SECTIONS %}
+  <div class="symptom-section" data-mutex-group="{{ mutex_group or '' }}">
+    <div class="head">{% set cat_icons = {'寒熱': 'P11_cold_heat', '汗出': 'P12_sweat', '頭身': 'P13_headache', '飲食': 'P14_diet', '二便': 'P15_toilet', '精神情緒': 'P17_mood', '胸腹': 'P15_toilet', '噁心嘔吐': 'P14_diet', '脈': 'P18_pulse'} %}{% if category in cat_icons %}<img src="{{ url_for('static', filename='img/icons/' + cat_icons[category] + '.png') }}" style="height: 22px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">{% endif %}{{ category }}{% if mutex_group %} <span class="muted" style="font-size: 11px; font-weight: normal;">(互斥組：{{ mutex_group }} — 同組只取 1 個)</span>{% endif %}</div>
+    <div class="symptom-options">
+      {% for sid, label in items %}
+        <label data-category="{{ category }}" data-symptom="{{ sid }}" data-mutex="{{ mutex_group or '' }}">
+          <input type="checkbox"
+                 {% if mutex_group %}data-mutex-group="{{ mutex_group }}"{% endif %}
+                 name="cat:{{ category }}"
+                 value="{{ sid }}">
+          <span>{{ label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
+
+<div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+  <a href="{{ url_for('intake_exam') }}" class="btn btn-secondary">← Back</a>
+  <button type="submit" class="btn btn-primary btn-lg">Continue → 切診</button>
+</div>
+</form>
+
+</div>
+
+<aside class="inquiry-sidebar">
+  <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">勾選計數</h3>
+  <div id="count-display" style="font-size: 28px; font-weight: 700; color: var(--brand-600);">0</div>
+  <div class="muted" style="font-size: 12px; margin-top: 4px;">已選症狀（去重互斥）</div>
+
+  <div class="card-title" style="margin-top: var(--space-4);">互斥組說明</div>
+  <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+    「寒熱型態」：發熱微熱惡風 vs 高燒 vs 往來寒熱 vs 惡寒無熱 vs 四肢厥冷 vs 寒熱錯雜 — <strong>只能勾 1 個</strong>。<br><br>
+    「汗出」「頭痛位置」「口渴」「大便」「小便」「精神狀態」「脈象」同理。
+  </div>
+
+  <div class="card-title" style="margin-top: var(--space-4);">v0.2 推論流程</div>
+  <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+    1. 勾選症狀<br>
+    2. 互斥組 JS 自動取消其他選項<br>
+    3. Submit → POST /intake/inquiry<br>
+    4. 寫 session → 重導 /inference<br>
+    5. <code>inference_engine.infer()</code> 跑規則引擎<br>
+    6. 6 經 score + 候選方證 + Confidence
+  </div>
+</aside>
+</div>
+
+<script>
+// 互斥組 JS: 同 group checkbox 自動取消其他
+document.addEventListener('change', (e) => {
+  if (e.target.type !== 'checkbox') return;
+  const mg = e.target.dataset.mutexGroup;
+  if (!mg) return;
+  if (e.target.checked) {
+    document.querySelectorAll(`input[type=checkbox][data-mutex-group="${mg}"]`).forEach((cb) => {
+      if (cb !== e.target) cb.checked = false;
+    });
+  }
+  updateCount();
+});
+
+function updateCount() {
+  const n = document.querySelectorAll('input[type=checkbox]:checked').length;
+  document.getElementById('count-display').textContent = n;
+}
+document.addEventListener('change', updateCount);
+updateCount();
+</script>
+
+<style>
+.symptom-section { border-left: 3px solid var(--brand-100); transition: all 0.1s; }
+.symptom-section:has(input:checked) { border-left-color: var(--brand-600); background: var(--brand-50); }
+.symptom-section[data-mutex-group]:has(input:checked) { border-left-width: 5px; }
+.symptom-options label { display: flex; align-items: center; gap: var(--space-2); padding: 6px 4px; cursor: pointer; }
+.symptom-options label:has(input:checked) { font-weight: 600; color: var(--brand-600); }
+</style>
+{% endblock %}

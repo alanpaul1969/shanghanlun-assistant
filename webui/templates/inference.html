@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% block title %}推論儀表板 S3{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_root') }}">← 新診</a>
+  <span style="margin-left: var(--space-3);">Inference · Step 8 of 8</span>
+  <span class="dots" style="margin-left: auto;">
+    <span class="dot done"></span><span class="dot done"></span><span class="dot done"></span>
+    <span class="dot done"></span><span class="dot done"></span>
+    <span class="dot done"></span><span class="dot done"></span><span class="dot current"></span>
+  </span>
+</div>
+
+<h1>推論儀表板</h1>
+<p class="muted">六經定位 → 候選方證 → 條文原文（v2 spec 三大區塊）</p>
+
+<!-- v0.2.2 病人資料 + differential 摘要 -->
+{% if patient or diff_count %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-3);">
+  {% if patient %}
+  <div class="card" style="margin: 0;">
+    <div class="card-title">👤 病人基本資料 (S2-1)</div>
+    <div style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
+      <strong>{{ patient.get('name', '?') }}</strong>
+      ({{ patient.get('gender', '?') }}, {{ patient.get('age', '?') }} 歲, 體型 {{ patient.get('body_type', '?') }})<br>
+      {% if patient.get('pregnancy') == 'yes' %}<span class="pill pill-danger">孕婦</span>{% endif %}
+      {% if patient.get('habits') %}<span class="muted">習慣: {{ patient.get('habits', [])|join('、') }}</span><br>{% endif %}
+      {% if patient.get('history') %}<span class="muted">既往: {{ patient.get('history')[:40] }}{% if patient.get('history')|length > 40 %}…{% endif %}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% if observations_matched %}
+  <div class="card" style="margin: 0; border-left: 4px solid var(--info-500);">
+    <div class="card-title">👁 望聞切診 ({{ observations_matched|length }} 項)</div>
+    <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+      {% for o in observations_matched %}
+      <span class="pill pill-info" style="margin-right: 4px; margin-bottom: 2px; display: inline-block;">{{ o.field }}: {{ o.value }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% if bagang and bagang.get('病位') %}
+  <div class="card" style="margin: 0; border-left: 4px solid var(--success-500);">
+    <div class="card-title">⚡ 八綱快診</div>
+    <div style="font-size: 13px; line-height: 1.7;">
+      病位 <strong>{{ bagang.get('病位') }}</strong> ·
+      寒熱 <strong>{{ bagang.get('寒熱') }}</strong> ·
+      虛實 <strong>{{ bagang.get('虛實') }}</strong>
+      {% if bagang.get('嚴重度') %} · 嚴重度 {{ bagang.get('嚴重度') }}{% endif %}
+      {% if bagang.get('chief_complaint') %}<br><span class="muted">主訴: {{ bagang.get('chief_complaint') }}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% if diff_count %}
+  <div class="card" style="margin: 0; border-left: 4px solid var(--brand-500);">
+    <div class="card-title">🔬 S2-7 鑑別答案 ({{ diff_count }} 題)</div>
+    {% if diff_extra %}
+    <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+      {% for cat, sids in diff_extra.items() %}
+      <strong>{{ cat }}:</strong> {{ sids|join('、') }}<br>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="muted" style="font-size: 12px;">鑑別答案已收, 但未映射到已知症狀 (v0.2.2 mapping 待補)</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if chief_text %}
+<div class="card" style="border-left: 4px solid {% if cc_info.llm_used %}var(--success-500){% else %}var(--text-muted){% endif %}; padding: var(--space-3); margin-bottom: var(--space-3);">
+  <div style="font-size: 13px;">
+    <strong>主訴：</strong>{{ chief_text }}
+    {% if cc_info.llm_used and cc_info.symptoms %}
+      <span class="pill pill-success" style="margin-left: 6px;">✦ 已併入推論</span>
+      <div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">
+        LLM 抽取：{% for cat, sids in cc_info.symptoms.items() %}{{ cat }}={{ sids|join('、') }}{% if not loop.last %}；{% endif %}{% endfor %}
+      </div>
+    {% elif cc_info.note %}
+      <span class="pill pill-info" style="margin-left: 6px;">{{ cc_info.note }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- 六經定位 (與下方 distribution 同一組推論數據) -->
+{% if inference %}
+<div class="inference-header">
+  <div>
+    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Primary</div>
+    <span class="pill pill-warning">{{ inference[0].name }}病 {{ inference[0].pct }}%</span>
+  </div>
+  {% if inference|length > 1 %}
+  <div class="secondary">
+    <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Secondary</span>
+    {% for m in inference[1:3] %}
+    <span class="pill {{ 'pill-danger' if loop.first }}" {% if not loop.first %}style="background: var(--warning-100); color: #92400E;"{% endif %}>{{ m.name }} {{ m.pct }}%</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-title">Meridian distribution</div>
+  {% for m in inference %}
+  <div class="meridian-bar {{ m.meridian }}">
+    <span class="name">{{ m.name }}</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{ m.pct }}%;"></div></div>
+    <span class="pct">{{ m.pct }}%</span>
+  </div>
+  {% endfor %}
+</div>
+
+{% if rag_hits %}
+<div class="card" style="padding: var(--space-3); margin-bottom: var(--space-3); border-left: 4px solid var(--brand-500);">
+  <div class="card-title">典籍出處 <span class="muted" style="font-size: 11px; font-weight: 400;">(RAG: 金匱/溫病條辨/千金/景岳/回春/金鑑/醫林改錯)</span></div>
+  {% for h in rag_hits %}
+  <details style="margin-bottom: var(--space-2); font-size: 13px;">
+    <summary style="cursor: pointer;">
+      <strong>{{ h.book }}</strong>·{{ h.chapter }}
+      <span class="muted" style="font-size: 11px;">相關度 {{ "%.0f"|format(h.score * 100) }}%</span>
+    </summary>
+    <div style="margin-top: 4px; color: var(--text-secondary); line-height: 1.7;">{{ h.text[:400] }}{% if h.text|length > 400 %}…{% endif %}</div>
+  </details>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- 候選方證 -->
+<h2><img src="{{ url_for('static', filename='img/icons/P23_formula.png') }}" style="height: 26px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">候選方證 (Top 3)</h2>
+
+{% if rerank_info %}
+<div class="card" style="border-left: 4px solid {% if rerank_info.llm_used %}var(--success-500){% else %}var(--text-muted){% endif %}; margin-bottom: var(--space-3); padding: var(--space-3);">
+  <div style="font-size: 12px; color: var(--text-secondary);">
+    <strong>🤖 LLM rerank:</strong>
+    {% if rerank_info.llm_used %}
+      <span class="pill pill-success">已啟用</span>
+      {% if rerank_info.llm_best %}LLM 選 <strong>{{ rerank_info.llm_best }}</strong>{% endif %}
+      {% if rerank_info.llm_reason %} — {{ rerank_info.llm_reason }}{% endif %}
+      {% if rerank_info.llm_note %}<br><span class="muted">{{ rerank_info.llm_note }}</span>{% endif %}
+    {% else %}
+      <span class="pill pill-info">未啟用</span> {{ rerank_info.llm_reason }}
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% for p in prescriptions %}
+<div class="card prescription-card rank-{{ p.rank }}">
+  <div class="rank">① 候選 #{{ p.rank }} {% if p.rank == 1 %}<span class="pill pill-brand">✓ 推薦</span>{% else %}次選{% endif %}
+    <form method="post" action="{{ url_for('select_prescription', idx=loop.index0) }}" style="display: inline; float: right;">
+      <button type="submit" class="btn btn-primary" style="padding: 4px 12px; font-size: 12px;">醫囑選定此方 →</button>
+    </form>
+  </div>
+  <div class="name">{{ p.name }}</div>
+  <div class="syndrome">證型：{{ p.syndrome }}</div>
+
+  <div class="match">
+    <span class="pct">Match {{ p.match }}%</span>
+    <span class="conf">Confidence: <span class="pill {% if p.confidence == 'High' %}pill-success{% else %}pill-warning{% endif %}">{{ p.confidence }}</span></span>
+  </div>
+
+  <hr style="border: 0; border-top: var(--border); margin: var(--space-3) 0;">
+
+  <div style="font-size: 13px;">
+    <strong>配對特徵：</strong>
+    {% for f in p.matched_features %}<span class="feature">{{ f }}</span>{% endfor %}
+    {% for m in p.missing_features %}<span class="missing">⚠ {{ m }}</span>{% endfor %}
+  </div>
+
+  {% if p.composition %}
+  <div style="margin-top: var(--space-3);">
+    <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Composition</div>
+    <table class="rx-table">
+      <thead><tr><th>藥材</th><th class="qty">劑量</th></tr></thead>
+      <tbody>
+        {% for c in p.composition %}
+        <tr><td>{{ c.name }}</td><td class="qty">{{ c.qty }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if p.patient_modifiers %}
+  <div style="background: #FEF3C7; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); margin-top: var(--space-2); font-size: 12px; color: #92400E;">
+    <strong>⚠ 病人 modifier:</strong>
+    <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+      {% for m in p.patient_modifiers %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if p.rescue_from %}
+  <div style="background: #FEE2E2; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); margin-top: var(--space-2); font-size: 12px; color: #991B1B; border-left: 3px solid #DC2626;">
+    <strong>🚨 救逆 modifier (previous_treatment 觸發):</strong>
+    <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+      {% for m in p.rescue_from %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if p.disease_interactions %}
+  <div style="background: #FEF3C7; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); margin-top: var(--space-2); font-size: 12px; color: #92400E; border-left: 3px solid #F59E0B;">
+    <strong>🏥 病史-方證互動 (disease_formula_interactions 觸發):</strong>
+    <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+      {% for m in p.disease_interactions %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div style="margin-top: var(--space-3); font-size: 12px;">
+    <strong>Algorithm lens:</strong>
+    {% for l in p.algorithm_lens %}<span class="lens-chip">{{ l }}</span>{% endfor %}
+  </div>
+  <div style="font-size: 12px; color: var(--text-secondary); margin-top: var(--space-1);">
+    <strong>Rationale:</strong> {{ p.rationale }}
+  </div>
+
+  {% if p.contraindications %}
+  <div class="contra">
+    <div class="head">⚠ Contraindications</div>
+    <ul>
+      {% for c in p.contraindications %}<li>{{ c }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="source-quote">{{ p.source_text }}</div>
+  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">— {{ p.source_ref }}</div>
+
+  <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap;">
+    <button class="btn btn-secondary toggle-panel" data-target="versions-{{ p.rank }}" style="display: inline-flex; align-items: center; gap: 4px;"><img src="{{ url_for('static', filename='img/icons/P25_versions.png') }}" style="height: 16px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">三版本對照 ▾</button>
+    <button class="btn btn-secondary toggle-panel" data-target="why-{{ p.rank }}">為什麼這個方 ▾</button>
+    <button class="btn btn-secondary toggle-panel" data-target="modify-{{ p.rank }}" style="display: inline-flex; align-items: center; gap: 4px;"><img src="{{ url_for('static', filename='img/icons/P26_modify.png') }}" style="height: 16px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">加減項 ▾</button>
+    {% if p.rank == 1 %}
+    <a href="{{ url_for('observe') }}" class="btn btn-primary">開始服藥觀察 →</a>
+    {% endif %}
+  </div>
+
+  {# 三版本對照面板 #}
+  {% if p.versions %}
+  <div class="collapse-panel" id="versions-{{ p.rank }}" style="display: none; margin-top: var(--space-3);">
+    {% for vname, vtext in p.versions.items() %}
+    <div style="margin-bottom: var(--space-2);">
+      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">{{ {'song': '宋本', 'zhang': '張卿子', 'laisu': '來蘇集', 'guilin': '桂林古本', 'song_jicheng': '宋本 (jicheng)'}.get(vname, vname) }}</div>
+      <div style="font-family: 'Noto Serif TC', serif; font-size: 14px; padding: var(--space-2) var(--space-3); background: var(--surface-subtle); border-left: 2px solid var(--text-muted); border-radius: var(--radius-sm);">{{ vtext }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# 為什麼這個方面板 #}
+  <div class="collapse-panel" id="why-{{ p.rank }}" style="display: none; margin-top: var(--space-3); padding: var(--space-3); background: var(--brand-50); border-radius: var(--radius-md);">
+    <div style="font-size: 13px; line-height: 1.7;">
+      <strong>證型：</strong>{{ p.syndrome }}<br>
+      <strong>Rationale：</strong>{{ p.rationale }}<br>
+      <strong>配對特徵：</strong>{% for f in p.matched_features %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}<br>
+      {% if p.missing_features %}<strong>待驗：</strong>{{ p.missing_features|join('、') }}{% endif %}
+    </div>
+  </div>
+
+  {# 加減項面板 #}
+  <div class="collapse-panel" id="modify-{{ p.rank }}" style="display: none; margin-top: var(--space-3); padding: var(--space-3); background: var(--warning-100); border-radius: var(--radius-md);">
+    <div style="font-size: 13px; line-height: 1.7; color: #92400E;">
+      {% if p.modifications %}
+      <strong>同基方變體（點入 Library 查條文）:</strong>
+      <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+        {% for m in p.modifications %}
+        <li><a href="{{ url_for('library', q=m.split('（')[0]) }}" style="color: #92400E; text-decoration: underline;">{{ m }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      {{ p.name }} 無常見加減變體 — 症狀變化時觸發 <a href="{{ url_for('observe_modify') }}">加減決策流程</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Safety -->
+<h2>Safety</h2>
+<div class="card">
+  <div class="safety-row">
+    {% for label, ok in safety_checks.items() %}
+    <span class="pill {% if ok %}pill-success{% else %}pill-danger{% endif %}">
+      {% if ok %}✓{% else %}✕{% endif %} {{ label.replace('_', ' ').title() }}
+    </span>
+    {% endfor %}
+  </div>
+</div>
+
+<div style="display: flex; gap: var(--space-2); margin-top: var(--space-4);">
+  <a href="{{ url_for('observe') }}" class="btn btn-primary">開始服藥觀察 →</a>
+  <button class="btn btn-secondary">儲存為候選</button>
+  <button class="btn btn-ghost">重新問診</button>
+</div>
+  <script>
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('toggle-panel')) {
+      const panel = document.getElementById(e.target.dataset.target);
+      if (!panel) return;
+      panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'block' : 'none';
+      e.target.textContent = e.target.textContent.includes('▾')
+        ? e.target.textContent.replace('▾', '▴') : e.target.textContent.replace('▴', '▾');
+    }
+  });
+  </script>
+  <style>
+  .collapse-panel { border: 1px solid var(--border); border-radius: var(--radius-md); }
+  </style>
+  {% endblock %}

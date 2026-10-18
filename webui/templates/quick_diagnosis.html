@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}辨六經結果{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('quick') }}">← 八綱</a>
+  <span style="margin-left: var(--space-3);">⚡ 快診 · 辨六經結果</span>
+</div>
+
+<h1>辨證結果</h1>
+
+{% if bagang %}
+<div class="card" style="border-left: 4px solid var(--success-500);">
+  <div class="card-title">⚡ 八綱辨證</div>
+  <div style="font-size: 14px; line-height: 1.8;">
+    病位 <strong>{{ bagang.get('病位') }}</strong> ·
+    寒熱 <strong>{{ bagang.get('寒熱') }}</strong> ·
+    虛實 <strong>{{ bagang.get('虛實') }}</strong>
+    {% if bagang.get('嚴重度') %} · 嚴重度 <strong>{{ bagang.get('嚴重度') }}</strong>{% endif %}
+    {% if bagang.get('chief_complaint') %}<br><span class="muted">主訴: {{ bagang.get('chief_complaint') }}</span>{% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-title">六經辨證（八綱 → 六經）</div>
+  {% for m in meridians %}
+  <div class="meridian-bar {{ m.meridian }}" style="{% if loop.first %}font-weight: 600;{% endif %}">
+    <span class="name">{{ m.name }}</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{ m.pct }}%;"></div></div>
+    <span class="pct">{{ m.pct }}%</span>
+  </div>
+  {% endfor %}
+  <div style="margin-top: var(--space-3);">
+    <span class="pill {% if confidence == 'High' %}pill-success{% elif confidence == 'Medium' %}pill-warning{% else %}pill-danger{% endif %}">
+      辨證信心: {{ confidence }}
+    </span>
+    {% if confidence == 'Low' %}
+    <span class="muted" style="font-size: 12px; margin-left: 8px;">信心不足 — 建議用 <a href="{{ url_for('intake_root') }}">📋 詳診</a> 補充症狀</span>
+    {% endif %}
+  </div>
+</div>
+
+{% if prescriptions %}
+<div class="card" style="border-left: 4px solid var(--brand-500);">
+  <div class="card-title">初步候選方證 (依八綱映射)</div>
+  {% for p in prescriptions %}
+  <div style="font-size: 14px; padding: 4px 0;">
+    {{ loop.index }}. <strong>{{ p.name }}</strong>
+    <span class="muted">— {{ p.syndrome }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div style="display: flex; gap: var(--space-2); margin-top: var(--space-4); justify-content: space-between;">
+  <a href="{{ url_for('quick') }}" class="btn btn-secondary">← 重新八綱</a>
+  <div style="display: flex; gap: var(--space-2);">
+    <a href="{{ url_for('inference') }}" class="btn btn-ghost">跳過追問</a>
+    <a href="{{ url_for('quick_followup') }}" class="btn btn-primary btn-lg">追問確認 →</a>
+  </div>
+</div>
+{% endblock %}

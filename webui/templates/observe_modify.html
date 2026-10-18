@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}加減決策 S4-2{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('observe') }}">← 服藥觀察</a>
+  <span style="margin-left: var(--space-3);">加減決策 · {{ formula }}</span>
+  <span class="muted" style="margin-left: auto;">v0.3 · 寫 session['modification']</span>
+</div>
+
+<h1>加減決策 (S4-2)</h1>
+<p class="muted">選擇下一步: 原方續服 / 原方加減 / 換方</p>
+
+<form method="POST" action="{{ url_for('observe_modify') }}" id="modify-form">
+{% for b in branches %}
+<div class="card" style="border-left: 4px solid var(--brand-100);">
+  <label style="display: flex; gap: var(--space-3); align-items: flex-start; cursor: pointer;">
+    <input type="radio" name="branch" value="{{ b.text }}" required style="margin-top: 4px;">
+    <div>
+      <div style="font-size: 16px; font-weight: 600;">▶ {{ b.n }}. {{ b.text }}</div>
+      <div class="muted" style="font-size: 12px; margin-top: 2px;">Source: {{ b.source }} · Algorithm: <code>{{ b.lens }}</code></div>
+    </div>
+  </label>
+</div>
+{% endfor %}
+
+<div class="card">
+  <div class="card-title">新症狀 (選換方/加減時填)</div>
+  <textarea name="new_symptoms" rows="2" placeholder="例: 出現項背強几几、口苦、腹痛..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;"></textarea>
+</div>
+
+<div class="card">
+  <div class="card-title">決策理由</div>
+  <textarea name="reason" rows="2" placeholder="例: 微汗出但頭痛未解，原方再服一劑" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;"></textarea>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+  <a href="{{ url_for('observe') }}" class="btn btn-secondary">← 服藥觀察</a>
+  <button type="submit" class="btn btn-primary">確認決策 →</button>
+</div>
+</form>
+{% endblock %}

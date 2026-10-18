@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}追問確認 — 傷寒論臨床助理{% endblock %}
+
+{% block content %}
+<!-- 步驟指示 -->
+<div class="progress-steps">
+  <span class="step done">① 八綱</span>
+  <span class="step done">② 辨六經</span>
+  <span class="step active">③ 追問</span>
+  <span class="step">④ 方證</span>
+</div>
+
+<h2>③ 針對 {{ top_meridian }} 證追問</h2>
+<p class="muted">根據初步辨證與條文差異點（方證鑑別／加減項），請確認以下細節。答「不確定」可跳過。
+  {% if llm_note %}<br><span style="font-size: 12px; {% if llm_used %}color: var(--brand-600);{% else %}color: var(--color-muted);{% endif %}">{{ "✦ " if llm_used else "" }}{{ llm_note }}</span>{% endif %}
+</p>
+
+{% if prescriptions %}
+<div class="card" style="background: var(--color-surface); margin-bottom: var(--space-4);">
+  <strong>目前候選方證：</strong>
+  <ul style="margin: var(--space-2) 0 0 0; padding-left: 18px;">
+    {% for p in prescriptions %}
+    <li><strong>{{ p.name }}</strong>（{{ p.match }}%，{{ p.syndrome }}）</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('quick_followup') }}">
+  {% for q in questions %}
+  <div class="card" style="margin-bottom: var(--space-3);">
+    <label style="font-weight: 600;">{{ loop.index }}. {{ q.question }}</label>
+    <div class="option-group" style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2);">
+      {% for opt in q.options %}
+      <label class="option-pill" style="cursor: pointer;">
+        <input type="radio" name="{{ q.id }}" value="{{ opt }}" required
+               style="margin-right: 4px;">{{ opt }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if extra_questions %}
+  <h3 style="margin-top: var(--space-4);">依主訴生成的加減項追問
+    <span class="muted" style="font-size: 12px; font-weight: 400;">(LLM)</span>
+  </h3>
+  {% for q in extra_questions %}
+  <div class="card" style="margin-bottom: var(--space-3); border-left: 3px solid var(--brand-500);">
+    <label style="font-weight: 600;">{{ q.question }}</label>
+    <div class="option-group" style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2);">
+      {% for opt in q.options %}
+      <label class="option-pill" style="cursor: pointer;">
+        <input type="radio" name="{{ q.id }}" value="{{ opt }}"
+               style="margin-right: 4px;">{{ opt }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if second_questions %}
+  <h3 style="margin-top: var(--space-4);">兼查 {{ second_meridian }}（次要候選）</h3>
+  {% for q in second_questions %}
+  <div class="card" style="margin-bottom: var(--space-3); border-left: 3px solid var(--color-muted);">
+    <label style="font-weight: 600;">{{ q.question }}</label>
+    <div class="option-group" style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2);">
+      {% for opt in q.options %}
+      <label class="option-pill" style="cursor: pointer;">
+        <input type="radio" name="{{ q.id }}" value="{{ opt }}"
+               style="margin-right: 4px;">{{ opt }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div style="display: flex; gap: var(--space-2); margin-top: var(--space-4); justify-content: space-between;">
+    <a href="{{ url_for('quick_diagnosis') }}" class="btn btn-secondary">← 回辨六經</a>
+    <button type="submit" class="btn btn-primary btn-lg">帶入答案重新推論 →</button>
+  </div>
+</form>
+{% endblock %}

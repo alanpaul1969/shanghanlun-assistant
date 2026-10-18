@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}起病與主訴 S2-2{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_step', step='basic') }}">← 基本資料</a>
+  <span style="margin-left: var(--space-3);">起病與主訴 · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: auto;">v0.2.2 · 寫 session['onset']</span>
+</div>
+
+<h1>起病與主訴 (S2-2)</h1>
+<p class="muted">主訴、發病時間、誘因、加重緩解因素 → 影響 S3 推論的"時序"與"病程"線索</p>
+
+<form method="POST" action="{{ url_for('intake_onset') }}" id="onset-form">
+<div class="inquiry-layout">
+<div class="inquiry-main">
+
+  <div class="card">
+    <div class="card-title">主訴</div>
+
+    <div class="symptom-section">
+      <div class="head">① 主訴 (Chief Complaint)</div>
+      <textarea name="chief_complaint" rows="3" required placeholder="例: 頭痛 3 天 + 發燒 1 天 + 咳嗽 2 天" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;">{{ onset.get('chief_complaint', '') }}</textarea>
+      <div class="muted" style="font-size: 12px; margin-top: 4px;">患者主述 (可加「+」「伴」「3 天」時序)</div>
+    </div>
+
+    <div class="symptom-section">
+      <div class="head">② 發病時間 & 速度</div>
+      <div style="display: flex; gap: var(--space-3); align-items: center;">
+        <input type="date" name="onset_date" value="{{ onset.get('onset_date', '') }}" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;">
+        <span class="muted">+</span>
+        <select name="onset_speed" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;">
+          <option value="">速度?</option>
+          {% for s in ['急性 (數小時內)', '亞急性 (1-3 天)', '慢性 (數天以上)', '緩慢 (數週以上)'] %}
+          <option value="{{ s }}" {% if onset.get('onset_speed') == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="symptom-section">
+      <div class="head">③ 誘因 (可複選)</div>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        {% for t in ['受寒 / 淋雨', '過勞 / 熬夜', '情緒波動', '飲食不節', '外感風寒', '誤治 / 服錯藥', '外傷 / 手術', '不明'] %}
+        <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+          <input type="checkbox" name="trigger" value="{{ t }}"> {{ t }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="symptom-section">
+      <div class="head">④ 加重因素</div>
+      <textarea name="aggravating" rows="2" placeholder="例: 下午傍晚加重、夜間加重、進食後加重、活動後加重..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;">{{ onset.get('aggravating', '') }}</textarea>
+    </div>
+
+    <div class="symptom-section">
+      <div class="head">⑤ 緩解因素</div>
+      <textarea name="relieving" rows="2" placeholder="例: 熱敷後緩解、平躺緩解、進食後緩解..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;">{{ onset.get('relieving', '') }}</textarea>
+    </div>
+
+    <div class="symptom-section">
+      <div class="head">⑥ 已用過治療 (選填)</div>
+      <textarea name="previous_treatment" rows="2" placeholder="例: 自行服普拿疼 1 顆 / 診所打退燒針 / 中藥已服桂枝湯 2 帖" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;">{{ onset.get('previous_treatment', '') }}</textarea>
+      <div class="muted" style="font-size: 12px; margin-top: 4px;">⚠ 如已服過某方 → 推論引擎會自動加 "錯誤注入/救逆" 標籤</div>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+    <a href="{{ url_for('intake_basic') }}" class="btn btn-secondary">← Back</a>
+    <button type="submit" class="btn btn-primary btn-lg">Continue → 望診</button>
+  </div>
+
+</div>
+
+<aside class="inquiry-sidebar">
+  <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">病程時序視角</h3>
+  <div class="muted" style="font-size: 13px; line-height: 1.7;">
+    <strong>宋本傷寒論</strong>是「病程時間軸」組織:
+    太陽上篇 → 太陽中 → 太陽下 →
+    陽明 → 少陽 → 太陰 → 少陰 → 厥陰 →
+    霍亂 → 差後勞復
+  </div>
+  <div class="card-title" style="margin-top: var(--space-4);">發病速度 vs 經病程</div>
+  <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+    <strong>急性數小時</strong>: 太陽 (表證) 多<br>
+    <strong>亞急性 1-3 天</strong>: 太陽 → 陽明/少陽 傳變<br>
+    <strong>慢性數週</strong>: 三陰病 (裡證) 多
+  </div>
+  <div class="card-title" style="margin-top: var(--space-4);">v0.2.2 進度</div>
+  <div class="muted" style="font-size: 12px; line-height: 1.6;">
+    onset → session['onset']<br>
+    下一步 S2-3 望診 → S2-4 聞診 →<br>
+    S2-5 問診 (核心症狀勾選) →<br>
+    S2-6 切診 → S2-7 differential →<br>
+    S3 inference 推論
+  </div>
+</aside>
+</div>
+</form>
+{% endblock %}

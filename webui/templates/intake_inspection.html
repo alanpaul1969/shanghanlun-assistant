@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}望診 S2-3{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_step', step='onset') }}">← 起病主訴</a>
+  <span style="margin-left: var(--space-3);">望診 (Inspection) · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: auto;">v0.2.3 · 寫 session['observations']</span>
+</div>
+
+<h1>望診 (S2-3)</h1>
+<p class="muted">中醫「望」的核心：觀察病人神色形態。資料會自動套用到推論引擎</p>
+
+<!-- v0.4 舌診照片 VLM -->
+<div class="card" style="border-left: 4px solid var(--info-500);">
+  <div class="card-title">📷 舌診照片 AI 分析 (8080 Qwen3.8-27B vision, 約 1-3 分鐘)</div>
+  <form method="POST" action="{{ url_for('intake_inspection') }}" enctype="multipart/form-data" style="display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;">
+    <input type="hidden" name="action" value="tongue_vlm">
+    <input type="file" name="tongue_photo" accept="image/*" capture="environment" required
+           style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px;">
+    <button type="submit" class="btn btn-primary">上傳分析 → 自動填舌診</button>
+  </form>
+  {% if vlm_result %}
+    {% if vlm_result.ok %}
+    <div style="margin-top: var(--space-3); padding: var(--space-3); background: var(--success-100); border-radius: var(--radius-md); font-size: 13px; color: #065F46;">
+      <strong>✓ VLM 分析完成（已自動填入舌體/舌苔/津液）:</strong><br>
+      舌質: <strong>{{ vlm_result.tongue_body }}</strong> ·
+      舌苔: <strong>{{ vlm_result.tongue_coat }}</strong> ·
+      津液: <strong>{{ vlm_result.moisture }}</strong>
+      {% if vlm_result.summary %}<br><span class="muted">{{ vlm_result.summary }}</span>{% endif %}
+    </div>
+    {% else %}
+    <div style="margin-top: var(--space-3); padding: var(--space-3); background: var(--danger-100); border-radius: var(--radius-md); font-size: 13px; color: #991B1B;">
+      ✗ VLM 分析失敗: {{ vlm_result.error }}
+    </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+<form method="POST" action="{{ url_for('intake_inspection') }}" id="inspection-form">
+<div class="inquiry-layout">
+<div class="inquiry-main">
+
+  <div class="card">
+    <div class="card-title">① 面色</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常', '正常'), ('紅潤', '紅潤 (熱證)'), ('潮紅', '潮紅 (實熱)'), ('蒼白', '蒼白 (虛寒)'), ('晦暗', '晦暗 (瘀血)'), ('萎黃', '萎黃 (血虛/黃疸)'), ('青紫', '青紫 (血瘀/寒)'), ('黧黑', '黧黑 (腎虛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="complexion" value="{{ v }}" {% if obs.get('complexion') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">② 舌體</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('淡紅', '淡紅 (正常)'), ('紅', '紅 (熱)'), ('暗紅', '暗紅 (瘀熱)'), ('淡白', '淡白 (血虛)'), ('胖大', '胖大 (脾虛)'), ('瘦薄', '瘦薄 (陰虛)'), ('齒痕', '齒痕 (脾虛)'), ('裂紋', '裂紋 (陰虛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="tongue_body" value="{{ v }}" {% if obs.get('tongue_body') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">③ 舌苔</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('白薄', '白薄 (正常/表寒)'), ('白厚', '白厚 (寒濕)'), ('黃薄', '黃薄 (熱)'), ('黃厚', '黃厚 (濕熱)'), ('灰黑', '灰黑 (寒濕重)'), ('少苔', '少苔 (陰虛)'), ('無苔', '無苔 (胃氣衰)'), ('膩苔', '膩苔 (痰濕)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="tongue_coat" value="{{ v }}" {% if obs.get('tongue_coat') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">④ 形態</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常', '正常'), ('消瘦', '消瘦 (陰虛)'), ('肥胖', '肥胖 (痰濕)'), ('浮腫', '浮腫 (脾虛)'), ('蜷縮', '蜷縮 (虛寒)'), ('躁動', '躁動 (實熱)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="body_form" value="{{ v }}" {% if obs.get('body_form') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⑤ 神態</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('清晰', '清晰 (正常)'), ('萎靡', '萎靡 (氣虛)'), ('煩躁', '煩躁 (實熱)'), ('嗜睡', '嗜睡 (少陰)'), ('鄭聲', '鄭聲 (虛重)'), ('譫語', '譫語 (陽明)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="spirit" value="{{ v }}" {% if obs.get('spirit') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⑥ 膚色</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常', '正常'), ('蒼白', '蒼白 (血虛)'), ('黃染', '黃染 (濕熱)'), ('潮紅', '潮紅 (熱)'), ('瘀斑', '瘀斑 (血瘀)'), ('甲錯', '甲錯 (血燥)'), ('水腫', '水腫 (陽虛)'), ('紫紺', '紫紺 (血瘀)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="skin" value="{{ v }}" {% if obs.get('skin') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+    <a href="{{ url_for('intake_step', step='onset') }}" class="btn btn-secondary">← Back</a>
+    <button type="submit" class="btn btn-primary">Continue → 聞診</button>
+  </div>
+
+</div>
+
+<aside class="inquiry-sidebar">
+  <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">望診 v2 spec</h3>
+  <div class="muted" style="font-size: 13px; line-height: 1.7;">
+    <strong>神色形態</strong>是中醫辨證第一步:
+    <ul style="margin: 8px 0; padding-left: 18px;">
+      <li><strong>神</strong>: 萎靡 = 氣虛; 煩躁 = 熱</li>
+      <li><strong>色</strong>: 蒼白 = 血虛; 紅 = 熱; 晦暗 = 瘀</li>
+      <li><strong>形</strong>: 消瘦 = 陰虛; 胖大 = 痰濕</li>
+      <li><strong>舌</strong>: 淡紅 = 正常; 白苔 = 寒; 黃苔 = 熱</li>
+    </ul>
+  </div>
+  <div class="card-title" style="margin-top: var(--space-4);">已收表徵</div>
+  <div class="muted" style="font-size: 12px;">
+    {% for k, v in obs.items() %}<div>{{ k }}: {{ v }}</div>{% endfor %}
+  </div>
+</aside>
+</div>
+</form>
+{% endblock %}

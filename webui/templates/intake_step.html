@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_root') }}">← 新診</a>
+  <span style="margin-left: var(--space-3);">{{ title }} · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="dots" style="margin-left: auto;">
+    {% for i in range(total_steps) %}
+    <span class="dot {% if i < step_num - 1 %}done{% elif i == step_num - 1 %}current{% endif %}"></span>
+    {% endfor %}
+  </span>
+</div>
+
+<h1>{{ title }}</h1>
+<p class="muted">v2 spec S2-{{ step_num }} 畫面 · 骨架（其他子畫面 v2.1 補）</p>
+
+<div class="inquiry-layout">
+  <div class="inquiry-main">
+    <div class="card">
+      <h2>資料收集</h2>
+      <p class="muted">{{ title }} 詳細欄位 v2.1 補</p>
+
+      <div class="symptom-section">
+        <div class="head">示範區塊</div>
+        <p>v2 規劃 §4 S2-{{ step_num }} 對應欄位</p>
+        <div class="symptom-options">
+          <label><input type="radio" name="opt"> 選項 A</label>
+          <label><input type="radio" name="opt"> 選項 B</label>
+          <label><input type="radio" name="opt"> 選項 C</label>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+      {% if prev_step %}
+      <a href="{{ url_for('intake_step', step=prev_step) }}" class="btn btn-secondary">← Back</a>
+      {% else %}
+      <a href="{{ url_for('home') }}" class="btn btn-secondary">← Dashboard</a>
+      {% endif %}
+      {% if next_step and next_step != 'inference' %}
+        <a href="{{ url_for('intake_step', step=next_step) }}" class="btn btn-primary">Continue →</a>
+      {% else %}
+        <a href="{{ url_for('inference') }}" class="btn btn-primary">See results →</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside class="inquiry-sidebar">
+    <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Current inference ↑</h3>
+    {% for m in inference %}
+    <div class="meridian-bar {{ m.meridian }}">
+      <span class="name">{{ m.name }}</span>
+      <div class="bar-track"><div class="bar-fill" style="width: {{ m.pct }}%;"></div></div>
+      <span class="pct">{{ m.pct }}%</span>
+    </div>
+    {% endfor %}
+  </aside>
+</div>
+{% endblock %}

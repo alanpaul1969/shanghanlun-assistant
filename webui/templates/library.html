@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Library S5{% endblock %}
+
+{% block content %}
+<img src="{{ url_for('static', filename='img/P37_six_meridian_radar.png') }}" alt="六經" style="float: right; height: 88px; border-radius: var(--radius-lg); margin: 0 0 var(--space-2) var(--space-3);">
+
+<div class="step-progress">
+  <span>Library</span>
+  <span class="muted" style="margin-left: var(--space-3);">條文搜尋 · 4 版本切換 · v0.2.3 全文搜尋</span>
+</div>
+
+<h1>Library</h1>
+
+<!-- Search bar -->
+<form method="GET" action="{{ url_for('library') }}" id="library-search-form">
+<div class="library-search">
+  <input type="search" name="q" value="{{ q }}" placeholder="搜尋條文（如：頭痛、桂枝湯、太陽病、往來寒熱、弦脈…）" autofocus>
+  <div class="version-pills">
+    <a href="{{ url_for('library', q=q, version='all') }}" class="version-pill {% if version == 'all' %}active{% endif %}">● 全部</a>
+    <a href="{{ url_for('library', q=q, version='song') }}" class="version-pill {% if version == 'song' %}active{% endif %}">宋本</a>
+    <a href="{{ url_for('library', q=q, version='zhang') }}" class="version-pill {% if version == 'zhang' %}active{% endif %}">張卿子</a>
+    <a href="{{ url_for('library', q=q, version='laisu') }}" class="version-pill {% if version == 'laisu' %}active{% endif %}">來蘇集</a>
+    <a href="{{ url_for('library', q=q, version='guilin') }}" class="version-pill {% if version == 'guilin' %}active{% endif %}">桂林古本</a>
+  </div>
+</div>
+</form>
+
+<!-- 統計 -->
+<div class="muted" style="font-size: 13px; margin: var(--space-3) 0;">
+  {% if q %}
+    搜尋 "<strong>{{ q }}</strong>"：命中 <strong>{{ stats.matched }}</strong> / {{ stats.total }} 條
+    {% if version != 'all' %} · 限定 <strong>{{ version_legend.get(version, version) }}</strong> 版{% endif %}
+  {% else %}
+    共 <strong>{{ stats.total }}</strong> 條條文（4 版本）
+  {% endif %}
+</div>
+
+{% if corpus_hits %}
+<div class="card" style="padding: var(--space-3); margin-top: var(--space-3); border-left: 4px solid var(--brand-500);">
+  <div class="card-title">七典跨典檢索 <span class="muted" style="font-size: 11px; font-weight: 400;">(金匱要略/溫病條辨/備急千金要方/景岳全書/萬病回春/醫宗金鑑/醫林改錯)</span></div>
+  {% for h in corpus_hits %}
+  <details style="margin-bottom: var(--space-2); font-size: 13px;">
+    <summary style="cursor: pointer;">
+      <strong>{{ h.book }}</strong>·{{ h.chapter }}
+      <span class="muted" style="font-size: 11px;">相關度 {{ "%.0f"|format(h.score * 100) }}%</span>
+    </summary>
+    <div style="margin-top: 4px; color: var(--text-secondary); line-height: 1.7;">{{ h.text[:400] }}{% if h.text|length > 400 %}…{% endif %}</div>
+  </details>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- 結果: 4 版本並列 -->
+{% if not passages %}
+  <div class="card" style="margin-top: var(--space-3); text-align: center; padding: var(--space-5); color: var(--text-muted);">
+    {% if q %}
+      沒有條文匹配「<strong>{{ q }}</strong>」。<br>試試：桂枝湯、少陽、發熱、弦脈、小便不利、腹瀉、厥冷
+    {% else %}
+      沒有條文
+    {% endif %}
+  </div>
+{% else %}
+  {% for p in passages %}
+  <div class="card entry-card" data-entry-id="{{ p.id }}">
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-2);">
+      <div style="flex: 1;">
+        <div style="font-size: 18px; font-weight: 600; color: var(--brand-600); margin-bottom: 4px;">
+          #{{ p.id }} · {{ p.formula }}
+        </div>
+        <div class="muted" style="font-size: 12px; margin-bottom: var(--space-2);">
+          {{ p.category }} · {% if p.alias %}{{ p.alias|join(' · ') }}{% endif %}
+        </div>
+        {% if p.keywords %}
+        <div style="margin-bottom: var(--space-2);">
+          {% for kw in p.keywords %}
+          <span class="pill pill-info" style="font-size: 11px; margin-right: 4px;">{{ kw }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 4 版本並列 (預設顯示宋本, 其他 3 版本藏 display:none, 點三版本並列按鈕展開) -->
+    <div class="version-quote" data-version="宋本" style="font-family: 'Noto Serif TC', 'Source Han Serif TC', serif; font-size: 15px; color: var(--text-primary); padding: var(--space-3); background: var(--surface-subtle); border-left: 3px solid var(--brand-600); border-radius: var(--radius-sm);">
+      {{ p.versions.song | highlight_q(q) | safe }}
+    </div>
+
+    <div class="other-versions" style="display: none; margin-top: var(--space-2);">
+      {% for vname, vcode, vlabel in [('張卿子', 'zhang', '張卿子本'), ('來蘇集', 'laisu', '柯琴重編'), ('桂林古本', 'guilin', '桂林古本')] %}
+      <div style="margin-bottom: var(--space-2);">
+        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">{{ vlabel }}</div>
+        <div class="version-quote" data-version="{{ vlabel }}" style="font-family: 'Noto Serif TC', 'Source Han Serif TC', serif; font-size: 14px; color: var(--text-primary); padding: var(--space-2) var(--space-3); background: var(--surface-subtle); border-left: 2px solid var(--text-muted); border-radius: var(--radius-sm);">
+          {{ p.versions[vcode] | highlight_q(q) | safe }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2);">
+      <button class="btn btn-secondary toggle-versions" style="font-size: 11px; padding: 4px 8px;">三版本並列</button>
+      <a href="{{ url_for('library', q=p.formula) }}" class="btn btn-ghost" style="font-size: 11px; padding: 4px 8px; text-decoration: none;">找同方證</a>
+    </div>
+  </div>
+  {% endfor %}
+{% endif %}
+
+<script>
+// 三版本並列 toggle (跟 Library v0.1.1 同)
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('toggle-versions')) {
+    const card = e.target.closest('.entry-card');
+    const ov = card.querySelector('.other-versions');
+    if (!ov) return;
+    if (ov.style.display === 'none' || !ov.style.display) {
+      ov.style.display = 'block';
+      e.target.textContent = '隱藏其他版本';
+    } else {
+      ov.style.display = 'none';
+      e.target.textContent = '三版本並列';
+    }
+  }
+});
+</script>
+
+<style>
+.entry-card { padding: var(--space-4); border-left: 3px solid var(--brand-100); }
+.entry-card:has(input:focus) { border-left-color: var(--brand-500); }
+mark { background: #FEF08A; padding: 0 2px; border-radius: 2px; }
+</style>
+{% endblock %}

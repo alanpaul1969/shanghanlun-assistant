@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_root') }}">← 新診</a>
+  <span style="margin-left: var(--space-3);">{{ title }} · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: var(--space-3);">v0.1.1 動態生成 6 經追問</span>
+</div>
+
+<h1>{{ title }}</h1>
+<p class="muted">依你之前勾選的症狀，針對其餘 5 經（陽明 / 少陽 / 太陰 / 少陰 / 厥陰）動態生成追問。**勾選完下面問題 → 推論引擎會重新評分六經分佈**。</p>
+
+<form method="post" action="{{ url_for('inference') }}" id="diff-form">
+<input type="hidden" name="differential_answers" id="differential_answers" value="">
+
+{% for meridian, questions in diff_questions.items() %}
+<div class="card meridian-section" data-meridian="{{ meridian }}" style="margin-bottom: var(--space-3);">
+  <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+    <span>
+      <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+                   background:
+                   {% if meridian == '太陽'  %}var(--meridian-taiyang){% elif meridian == '陽明' %}var(--meridian-yangming){% elif meridian == '少陽' %}var(--meridian-shaoyang){% elif meridian == '太陰' %}var(--meridian-taiyin){% elif meridian == '少陰' %}var(--meridian-shaoyin){% elif meridian == '厥陰' %}var(--meridian-jueyin){% endif %};
+                   margin-right: 8px; vertical-align: middle;"></span>
+      <strong>{{ meridian }} 病</strong> 追問
+    </span>
+    <span class="muted" style="font-size: 12px;">{{ questions|length }} 題</span>
+  </div>
+
+  {% for q in questions %}
+  <div class="symptom-section" style="margin-bottom: var(--space-2);">
+    <div class="head" style="font-size: 13px;">{{ loop.index }}. {{ q.question }}</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for opt in q.options %}
+      <label style="font-size: 13px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--surface-base);">
+        <input type="radio" name="q-{{ q.id }}" value="{{ opt }}" data-meridian="{{ meridian }}" style="margin-right: 4px;">
+        {{ opt }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+<div style="display: flex; gap: var(--space-2); margin-top: var(--space-4); justify-content: space-between;">
+  <a href="{{ url_for('intake_step', step=prev_step) }}" class="btn btn-secondary">← Back</a>
+  <button type="submit" class="btn btn-primary btn-lg" onclick="document.getElementById('differential_answers').value = JSON.stringify(collectAnswers())">
+    Submit → 重新推論
+  </button>
+</div>
+</form>
+
+<script>
+function collectAnswers() {
+  const out = {};
+  document.querySelectorAll('input[type="radio"]:checked').forEach((r) => {
+    const qid = r.name.replace(/^q-/, '');
+    const meridian = r.dataset.meridian;
+    if (!out[meridian]) out[meridian] = {};
+    out[meridian][qid] = r.value;
+  });
+  return out;
+}
+</script>
+
+<style>
+  .meridian-section input[type="radio"]:checked + * { color: var(--brand-600); }
+  .meridian-section .symptom-section { transition: opacity 0.1s; }
+  .meridian-section:has(input:checked) { border-left: 4px solid var(--brand-500); }
+</style>
+{% endblock %}

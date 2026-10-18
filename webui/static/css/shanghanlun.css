@@ -1,0 +1,432 @@
+/* 傷寒論助手 WebUI v0.1.0-mvp — design tokens (v2 clinical × SaaS dashboard)
+   對應 02-UI-UX規劃.md §3 design tokens。
+   Phase 1: 5 個核心頁面 + 1 Library demo。Phase 2 再補 mobile/tablet responsive。
+*/
+
+:root {
+  /* === Surface === */
+  --surface-base:     #FFFFFF;
+  --surface-subtle:   #F8FAFC;
+  --surface-sunken:   #F1F5F9;
+  --surface-elevated: #FFFFFF;
+  --surface-inverse:  #0F172A;
+
+  /* === Text === */
+  --text-primary:   #0F172A;   /* slate-900 */
+  --text-secondary: #475569;   /* slate-600 */
+  --text-muted:     #94A3B8;   /* slate-400 */
+  --text-disabled:  #CBD5E1;   /* slate-300 */
+  --text-inverse:   #F8FAFC;
+
+  /* === Brand === */
+  --brand-600: #4F46E5;
+  --brand-500: #6366F1;
+  --brand-100: #E0E7FF;
+  --brand-50:  #EEF2FF;
+
+  /* === Semantic === */
+  --success-500: #10B981;
+  --success-100: #D1FAE5;
+  --warning-500: #F59E0B;
+  --warning-100: #FEF3C7;
+  --danger-500:  #DC2626;
+  --danger-100:  #FEE2E2;
+  --info-500:    #0EA5E9;
+  --info-100:    #E0F2FE;
+
+  /* === 六經專屬色（核心差異化） === */
+  --meridian-taiyang:  #EA580C;   /* 太陽病：表證 */
+  --meridian-yangming: #DC2626;   /* 陽明病：裡實熱 */
+  --meridian-shaoyang: #CA8A04;   /* 少陽病：半表半裡 */
+  --meridian-taiyin:   #65A30D;   /* 太陰病：裡寒虛 */
+  --meridian-shaoyin:  #1D4ED8;   /* 少陰病：全身虛寒 */
+  --meridian-jueyin:   #7C3AED;   /* 厥陰病：寒熱錯雜 */
+
+  /* === Severity === */
+  --severity-mild:     var(--info-500);
+  --severity-moderate: var(--warning-500);
+  --severity-severe:   var(--danger-500);
+
+  /* === 間距/圓角/陰影 === */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.04);
+  --shadow-md: 0 4px 12px rgba(15,23,42,.06);
+  --shadow-lg: 0 12px 24px rgba(15,23,42,.08);
+  --border: 1px solid #E2E8F0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--surface-base);
+  margin: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 排版輔助 */
+h1 { font-size: 24px; font-weight: 600; margin: 0 0 var(--space-3); }
+h2 { font-size: 18px; font-weight: 600; margin: var(--space-5) 0 var(--space-3); }
+h3 { font-size: 16px; font-weight: 600; margin: var(--space-4) 0 var(--space-2); }
+.mono { font-family: "JetBrains Mono", "SF Mono", "Consolas", monospace; }
+.muted { color: var(--text-muted); }
+.secondary { color: var(--text-secondary); }
+
+/* App 頂部 nav */
+.app-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: var(--border);
+  background: var(--surface-base);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.app-nav .brand {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-weight: 600; font-size: 16px; color: var(--text-primary);
+}
+.app-nav .brand .logo {
+  width: 24px; height: 24px; border-radius: var(--radius-sm);
+  background: var(--brand-600); position: relative;
+}
+.app-nav .brand .logo::after {
+  content: ""; position: absolute; inset: 5px 5px 9px 5px;
+  background: white; border-radius: 1px;
+}
+.app-nav .brand .logo::before {
+  content: ""; position: absolute; left: 11px; top: 7px;
+  width: 2px; height: 6px; background: var(--brand-600);
+}
+.app-nav nav { display: flex; gap: var(--space-4); }
+.app-nav nav a {
+  text-decoration: none; color: var(--text-secondary);
+  font-weight: 500; font-size: 14px; padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+.app-nav nav a.active,
+.app-nav nav a:hover { color: var(--brand-600); background: var(--brand-50); }
+.app-nav .user { color: var(--text-muted); font-size: 13px; }
+
+/* Main container */
+main { max-width: 1200px; margin: 0 auto; padding: var(--space-5); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 8px 16px; border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  border: 1px solid transparent; text-decoration: none;
+  transition: background 0.1s ease;
+}
+.btn-primary { background: var(--brand-600); color: white; }
+.btn-primary:hover { background: var(--brand-500); }
+.btn-secondary { background: white; border-color: #E2E8F0; color: var(--text-primary); }
+.btn-secondary:hover { background: var(--surface-subtle); }
+.btn-ghost { background: transparent; color: var(--brand-600); }
+.btn-ghost:hover { background: var(--brand-50); }
+.btn-danger { background: var(--danger-500); color: white; }
+.btn-lg { padding: 12px 24px; font-size: 16px; }
+
+/* Card */
+.card {
+  background: var(--surface-elevated);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+.card-title {
+  font-size: 14px; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+/* Pills / badges */
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+}
+.pill-success { background: var(--success-100); color: #065F46; }
+.pill-warning { background: var(--warning-100); color: #92400E; }
+.pill-danger  { background: var(--danger-100);  color: #991B1B; }
+.pill-info    { background: var(--info-100);    color: #075985; }
+.pill-brand   { background: var(--brand-100);   color: #3730A3; }
+
+/* Home Dashboard (S1) */
+.hero-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3); margin-bottom: var(--space-4);
+}
+.stat-card {
+  background: var(--surface-elevated);
+  border: var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-top: var(--space-1); }
+.stat-card .sub { font-size: 12px; color: var(--text-secondary); margin-top: var(--space-1); }
+
+.session-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.session-card { border-left: 3px solid var(--brand-600); }
+.session-card .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
+.session-card .date { font-size: 12px; color: var(--text-muted); }
+.session-card .syndrome { font-size: 16px; font-weight: 600; }
+.session-card .prescription { font-size: 13px; color: var(--text-secondary); margin: var(--space-1) 0 var(--space-2); }
+.session-card .status { font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-3); }
+
+/* Intake Inquiry (S2-5) — 兩欄 + sticky inference sidebar */
+.inquiry-layout {
+  display: grid; grid-template-columns: 1fr 320px;
+  gap: var(--space-5); margin-top: var(--space-4);
+}
+.inquiry-main { min-width: 0; }
+.inquiry-sidebar {
+  position: sticky; top: 80px; align-self: start;
+  background: var(--surface-subtle);
+  border: var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.step-progress {
+  display: flex; align-items: center; gap: var(--space-2);
+  color: var(--text-muted); font-size: 13px; margin-bottom: var(--space-3);
+}
+.step-progress .dots { display: inline-flex; gap: 4px; }
+.step-progress .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-disabled);
+}
+.step-progress .dot.done { background: var(--brand-600); }
+.step-progress .dot.current { background: var(--warning-500); }
+
+.symptom-section {
+  background: var(--surface-base);
+  border: var(--border); border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.symptom-section .head {
+  font-size: 14px; font-weight: 600; color: var(--brand-600);
+  margin-bottom: var(--space-2);
+}
+.symptom-options { display: flex; flex-direction: column; gap: 6px; }
+.symptom-options label {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: 14px; color: var(--text-primary);
+  cursor: pointer; padding: 4px 0;
+}
+.symptom-options input[type="radio"],
+.symptom-options input[type="checkbox"] { accent-color: var(--brand-600); }
+.symptom-options .other { display: flex; gap: var(--space-2); align-items: center; }
+
+/* Inference sidebar — 六經分佈 */
+.meridian-bar { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1); font-size: 13px; }
+.meridian-bar .name { width: 36px; }
+.meridian-bar .bar-track { flex: 1; height: 6px; background: var(--surface-sunken); border-radius: 3px; overflow: hidden; }
+.meridian-bar .bar-fill { height: 100%; border-radius: 3px; }
+.meridian-bar .pct { width: 36px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.meridian-bar.taiyang  .bar-fill { background: var(--meridian-taiyang); }
+.meridian-bar.yangming .bar-fill { background: var(--meridian-yangming); }
+.meridian-bar.shaoyang .bar-fill { background: var(--meridian-shaoyang); }
+.meridian-bar.taiyin   .bar-fill { background: var(--meridian-taiyin); }
+.meridian-bar.shaoyin  .bar-fill { background: var(--meridian-shaoyin); }
+.meridian-bar.jueyin   .bar-fill { background: var(--meridian-jueyin); }
+
+/* Inference dashboard (S3) */
+.inference-header {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-base); border: var(--border); border-radius: var(--radius-lg);
+  margin-bottom: var(--space-3);
+}
+.inference-header .primary { font-size: 20px; font-weight: 600; }
+.inference-header .secondary { display: flex; gap: var(--space-2); }
+.prescription-card { border-left: 4px solid var(--brand-600); }
+.prescription-card.rank-1 { border-left-color: var(--brand-600); border-left-width: 6px; }
+.prescription-card .rank { font-size: 12px; color: var(--text-muted); }
+.prescription-card .name { font-size: 20px; font-weight: 600; margin: 4px 0; }
+.prescription-card .syndrome { color: var(--text-secondary); font-size: 14px; margin-bottom: var(--space-3); }
+.prescription-card .match { display: flex; align-items: baseline; gap: var(--space-2); }
+.prescription-card .match .pct { font-size: 32px; font-weight: 700; color: var(--brand-600); }
+.prescription-card .match .conf { font-size: 12px; color: var(--text-muted); }
+.prescription-card .features { display: flex; flex-wrap: wrap; gap: 4px; margin: var(--space-3) 0; }
+.prescription-card .feature { background: var(--success-100); color: #065F46; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.prescription-card .missing { background: var(--warning-100); color: #92400E; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.prescription-card .rx-table { width: 100%; border-collapse: collapse; margin: var(--space-3) 0; font-size: 13px; }
+.prescription-card .rx-table th, .prescription-card .rx-table td { padding: 6px 10px; text-align: left; border-bottom: var(--border); }
+.prescription-card .rx-table th { background: var(--surface-subtle); font-weight: 600; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; }
+.prescription-card .rx-table td.qty { font-variant-numeric: tabular-nums; text-align: right; color: var(--text-secondary); }
+.prescription-card .lens-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: var(--space-3) 0; }
+.prescription-card .lens-chip { background: var(--brand-50); color: var(--brand-600); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-family: "JetBrains Mono", monospace; }
+.prescription-card .contra { background: var(--danger-100); padding: var(--space-3); border-radius: var(--radius-md); margin: var(--space-3) 0; }
+.prescription-card .contra .head { color: #991B1B; font-size: 13px; font-weight: 600; margin-bottom: var(--space-2); }
+.prescription-card .contra ul { margin: 0; padding-left: 18px; color: #991B1B; font-size: 13px; }
+.prescription-card .source-quote {
+  background: var(--surface-subtle);
+  border-left: 3px solid var(--text-muted);
+  padding: var(--space-3);
+  font-family: "Noto Serif TC", "Source Han Serif TC", serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-3);
+}
+.safety-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* Observe (S4-1) */
+.observe-sop { counter-reset: sop; }
+.observe-sop li {
+  list-style: none;
+  padding: var(--space-2) 0 var(--space-2) var(--space-6);
+  position: relative;
+  font-size: 14px;
+}
+.observe-sop li::before {
+  counter-increment: sop;
+  content: counter(sop);
+  position: absolute; left: 0; top: var(--space-2);
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--brand-100); color: var(--brand-600);
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+}
+.observe-sop .stop { color: var(--danger-500); font-weight: 600; }
+.stop-callout {
+  background: var(--danger-100); color: #991B1B;
+  border-left: 4px solid var(--danger-500);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin: var(--space-3) 0;
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.timeline {
+  display: flex; justify-content: space-between;
+  position: relative; padding: var(--space-3) 0 var(--space-2);
+  margin: var(--space-3) 0;
+}
+.timeline::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 14px;
+  height: 2px; background: var(--border);
+}
+.timeline-node { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
+.timeline-node .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--brand-600); border: 2px solid white; box-shadow: var(--shadow-sm); }
+.timeline-node .label { font-size: 12px; color: var(--text-secondary); margin-top: var(--space-1); font-weight: 500; }
+.timeline-node .sub { font-size: 11px; color: var(--text-muted); }
+.vital-chart { background: var(--surface-subtle); border-radius: var(--radius-md); padding: var(--space-3); }
+.vital-chart .label { font-size: 12px; color: var(--text-muted); }
+.vital-chart .svg { width: 100%; height: 60px; }
+.vital-chart .svg .line { fill: none; stroke: var(--brand-600); stroke-width: 2; }
+.vital-chart .svg .area { fill: var(--brand-100); opacity: 0.4; }
+.escalation {
+  background: var(--danger-100);
+  border: 1px solid var(--danger-500);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+}
+.escalation .head { color: #991B1B; font-weight: 600; font-size: 13px; margin-bottom: var(--space-2); }
+.escalation ul { margin: 0; padding-left: 18px; color: #991B1B; font-size: 13px; }
+
+/* Library (S5) */
+.library-search { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); align-items: center; }
+.library-search input[type="search"] {
+  flex: 1; padding: 8px 12px; border: var(--border); border-radius: var(--radius-md);
+  font-size: 14px; font-family: inherit;
+}
+.version-pills { display: flex; gap: var(--space-2); }
+.version-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; cursor: pointer;
+  background: var(--surface-subtle); color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.version-pill.active { background: var(--brand-600); color: white; border-color: var(--brand-600); }
+.entry-card { padding: var(--space-3) var(--space-4); border-left: 3px solid var(--brand-100); }
+.entry-card .quote { font-family: "Noto Serif TC", "Source Han Serif TC", serif; font-size: 16px; color: var(--text-primary); margin-bottom: var(--space-2); }
+.entry-card .meta { font-size: 12px; color: var(--text-muted); display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+/* Rescue banner (S4-3) */
+.rescue-banner {
+  background: var(--warning-100);
+  border: 1px solid var(--warning-500);
+  border-left: 6px solid var(--warning-500);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  display: flex; align-items: center; gap: var(--space-2);
+  color: #92400E; font-weight: 500;
+}
+
+/* Footer */
+footer { text-align: center; padding: var(--space-5); color: var(--text-muted); font-size: 12px; }
+
+/* Phase 1 標記（demo 用） */
+.phase-banner {
+  background: linear-gradient(90deg, var(--brand-50), var(--surface-base));
+  border: 1px dashed var(--brand-500);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  font-size: 13px;
+  color: var(--brand-600);
+}
+
+/* ===== Responsive (v2 spec §5 Phase 1.5) ===== */
+@media (max-width: 768px) {
+  /* nav 改直立 */
+  .app-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+  .app-nav .brand { font-size: 14px; }
+  .app-nav nav {
+    display: flex; overflow-x: auto;
+    gap: var(--space-2);
+  }
+  .app-nav nav a {
+    font-size: 12px; white-space: nowrap;
+    padding: 4px 8px;
+  }
+  .app-nav .user { display: none; }
+
+  /* main 拿掉 max-width */
+  main { padding: var(--space-3); }
+
+  /* Hero stats 直立 */
+  .hero-stats { grid-template-columns: 1fr; }
+  .session-list { grid-template-columns: 1fr; }
+  .inquiry-layout { grid-template-columns: 1fr; }
+  .inquiry-sidebar { position: static; top: auto; }
+  .prescription-card .rx-table th, .prescription-card .rx-table td { padding: 4px 6px; font-size: 12px; }
+
+  /* 8 張 PNG grid 變 2 欄 */
+  .card > div[style*="grid-template-columns: repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Library 搜尋列直立 */
+  .library-search { flex-direction: column; align-items: stretch; }
+  .version-pills { flex-wrap: wrap; }
+
+  /* Timeline 6 個節點在直式保留但允許 scroll */
+  .timeline { overflow-x: auto; padding-bottom: var(--space-3); }
+  .timeline-node { min-width: 70px; }
+
+  /* 文字大小 */
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; }
+  .prescription-card .name { font-size: 18px; }
+  .prescription-card .match .pct { font-size: 24px; }
+}

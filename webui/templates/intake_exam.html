@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}四診檢查{% endblock %}
+
+{% block content %}
+<div class="step-progress">
+  <a href="{{ url_for('intake_basic') }}">← 病人與起病</a>
+  <span style="margin-left: var(--space-3);">四診檢查 · Step {{ step_num }} of {{ total_steps }}</span>
+  <span class="muted" style="margin-left: auto;">v0.4.2 · 望+聞+切 一頁</span>
+</div>
+
+<h1>四診檢查（望 · 聞 · 切）</h1>
+<p class="muted">16 欄可跳答 — 有把握的填、沒把握留空，推論引擎自動處理缺項</p>
+
+<!-- 舌診 VLM (獨立 form, 不巢狀) -->
+<div class="card" style="border-left: 4px solid var(--info-500); margin-bottom: var(--space-3);">
+  <div class="card-title">📷 舌診照片 AI 分析 (8085, 約 1-2 分鐘, 成功自動填舌體/舌苔)</div>
+  <form method="POST" action="{{ url_for('tongue_vlm_upload') }}" enctype="multipart/form-data" style="display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;">
+    <input type="file" name="tongue_photo" accept="image/*" capture="environment" required style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px;">
+    <button type="submit" class="btn btn-secondary">上傳分析</button>
+    {% if obs.get('tongue_body') %}<span class="pill pill-success">已填: {{ obs.get('tongue_body') }} / {{ obs.get('tongue_coat', '?') }}</span>{% endif %}
+  </form>
+</div>
+
+<form method="POST" action="{{ url_for('intake_exam') }}" id="exam-form">
+
+<!-- ═══ 望診 ═══ -->
+<div class="card">
+  <div class="card-title" style="color: var(--meridian-taiyang); display: flex; align-items: center; justify-content: space-between;"><img src="{{ url_for('static', filename='img/icons/P19_tongue.png') }}" style="height: 24px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">望診
+    <img src="{{ url_for('static', filename='img/S23_wang_inspection.png') }}" alt="望診" style="height: 56px; border-radius: var(--radius-md); cursor: pointer;" onclick="this.style.height = this.style.height === '56px' ? '220px' : '56px'">
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">面色</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('正常','正常'),('紅潤','紅潤 (熱)'),('潮紅','潮紅 (實熱)'),('蒼白','蒼白 (虛寒)'),('晦暗','晦暗 (瘀)'),('萎黃','萎黃 (血虛)'),('青紫','青紫 (瘀寒)'),('黧黑','黧黑 (腎虛)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="complexion" value="{{ v }}" {% if obs.get('complexion') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">舌體</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v in ['淡紅','紅','暗紅','淡白','胖大','瘦薄','齒痕','裂紋'] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="tongue_body" value="{{ v }}" {% if obs.get('tongue_body') == v %}checked{% endif %}> {{ v }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">舌苔</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v in ['白薄','白厚','黃薄','黃厚','灰黑','少苔','無苔','膩苔'] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="tongue_coat" value="{{ v }}" {% if obs.get('tongue_coat') == v %}checked{% endif %}> {{ v }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">神態 & 形態</div>
+    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div>
+        <div class="muted" style="font-size: 11px;">神態</div>
+        <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 4px;">
+          {% for v in ['清晰','萎靡','煩躁','嗜睡','譫語'] %}
+          <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+            <input type="radio" name="spirit" value="{{ v }}" {% if obs.get('spirit') == v %}checked{% endif %}> {{ v }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <div class="muted" style="font-size: 11px;">形態</div>
+        <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 4px;">
+          {% for v in ['正常','消瘦','肥胖','浮腫'] %}
+          <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+            <input type="radio" name="body_form" value="{{ v }}" {% if obs.get('body_form') == v %}checked{% endif %}> {{ v }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">📷 舌診照片 — 用上方「AI 分析」自動填, 或手動選</div>
+    {% if obs.get('tongue_body') %}<div class="pill pill-success">目前: 舌體 {{ obs.get('tongue_body') }} / 苔 {{ obs.get('tongue_coat', '?') }}</div>{% endif %}
+  </div>
+</div>
+
+<!-- ═══ 聞診 ═══ -->
+<div class="card">
+  <div class="card-title" style="color: var(--meridian-shaoyang); display: flex; align-items: center; justify-content: space-between;"><img src="{{ url_for('static', filename='img/icons/P20_listening.png') }}" style="height: 24px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">聞診
+    <img src="{{ url_for('static', filename='img/S24_wen_auscultation.png') }}" alt="聞診" style="height: 56px; border-radius: var(--radius-md); cursor: pointer;" onclick="this.style.height = this.style.height === '56px' ? '220px' : '56px'">
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">語聲</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v in ['正常','低微','洪亮','嘶啞','重濁','無力'] %}
+      <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+        <input type="radio" name="voice" value="{{ v }}" {% if obs.get('voice') == v %}checked{% endif %}> {{ v }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">咳嗽 & 呼吸</div>
+    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div>
+        <div class="muted" style="font-size: 11px;">咳嗽</div>
+        <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 4px;">
+          {% for v in ['無','輕咳','重咳','乾咳','痰咳'] %}
+          <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+            <input type="radio" name="cough" value="{{ v }}" {% if obs.get('cough') == v %}checked{% endif %}> {{ v }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <div class="muted" style="font-size: 11px;">呼吸</div>
+        <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 4px;">
+          {% for v in ['正常','氣短','喘','促','微弱'] %}
+          <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+            <input type="radio" name="breathing" value="{{ v }}" {% if obs.get('breathing') == v %}checked{% endif %}> {{ v }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 切診 ═══ -->
+<div class="card">
+  <div class="card-title" style="color: var(--meridian-shaoyin); display: flex; align-items: center; justify-content: space-between;"><img src="{{ url_for('static', filename='img/icons/P18_pulse.png') }}" style="height: 24px; vertical-align: -5px; margin-right: 6px; border-radius: 4px;">切診
+    <img src="{{ url_for('static', filename='img/S26_qie_palpation.png') }}" alt="切診" style="height: 56px; border-radius: var(--radius-md); cursor: pointer;" onclick="this.style.height = this.style.height === '56px' ? '220px' : '56px'">
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">複合脈 (臨床常態, 優先)</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v, label in [('浮緊','浮緊 (傷寒→麻黃)'),('浮緩','浮緩 (中風→桂枝)'),('沉細','沉細 (少陰→四逆)'),('弦滑','弦滑 (少陽痰濕)'),('洪大','洪大 (陽明→白虎)'),('沉遲','沉遲 (裡寒)'),('浮數','浮數 (表熱)'),('結代','結代 (炙甘草)')] %}
+      <label style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;">
+        <input type="radio" name="pulse_combo" value="{{ v }}" {% if obs.get('pulse_combo') == v %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+    <div class="muted" style="font-size: 12px; margin-top: 4px;">選複合脈時, 下方單脈可留空</div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">單脈 (可留空)</div>
+    <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      {% for v in ['浮','沉','遲','數','虛','實','滑','澀','弦','緊','緩','弱','洪','細','微','結代'] %}
+      <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+        <input type="radio" name="pulse" value="{{ v }}" {% if obs.get('pulse') == v %}checked{% endif %}> {{ v }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="symptom-section">
+    <div class="head">腹診 & 膚溫</div>
+    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div>
+        <div class="muted" style="font-size: 11px;">腹診</div>
+        <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 4px;">
+          {% for v in ['軟','硬','脹','痛','喜按','拒按','冷','熱'] %}
+          <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+            <input type="radio" name="abdomen" value="{{ v }}" {% if obs.get('abdomen') == v %}checked{% endif %}> {{ v }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <div class="muted" style="font-size: 11px;">膚溫</div>
+        <div class="symptom-options" style="display: flex; flex-wrap: wrap; gap: 4px;">
+          {% for v in ['正常','熱','涼','冰冷','四肢冷','手足心熱'] %}
+          <label style="padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;">
+            <input type="radio" name="skin_temp" value="{{ v }}" {% if obs.get('skin_temp') == v %}checked{% endif %}> {{ v }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+  <a href="{{ url_for('intake_basic') }}" class="btn btn-secondary">← Back</a>
+  <button type="submit" class="btn btn-primary btn-lg">Continue → 問診</button>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,396 @@
+{
+  "_comment": "候選方證 → 歸經 + typical_categories 給規則引擎算 match%。資料來源：02-UI-UX規劃 §3 6 經色 + 雲端中醫 769 摘要 + 傷寒論核心處方表。",
+  "version": "v0.2.0-2026-10-17",
+  "formulas": {
+
+    "太陽": [
+      {
+        "name": "桂枝湯",
+        "syndrome": "太陽中風（風傷衛）",
+        "typical_categories": ["寒熱", "汗出", "頭身", "脈"],
+        "composition": [
+          {"name": "桂枝", "qty": "9.0 g"},
+          {"name": "芍藥", "qty": "9.0 g"},
+          {"name": "生薑", "qty": "9.0 g"},
+          {"name": "大棗", "qty": "12.0 g"},
+          {"name": "甘草", "qty": "6.0 g"}
+        ],
+        "algorithm_lens": ["#P1-001 主方樹", "#P1-007 鑑別"],
+        "rationale": "5 features matched; 1 conditional rule triggered",
+        "contraindications": [
+          "脈浮緊 (floating-tight) → 太陽傷寒/麻黃湯",
+          "瘡家 / 淋家 / 衄家 / 汗家"
+        ],
+        "source_text": "「太陽病，頭痛，發熱，汗出，惡風，桂枝湯主之。」",
+        "source_ref": "傷寒論 宋本 13 條"
+      },
+      {
+        "name": "桂枝加葛根湯",
+        "syndrome": "太陽中風 + 項背強",
+        "typical_categories": ["寒熱", "汗出", "頭身"],
+        "composition": [
+          {"name": "桂枝湯", "qty": "原方"},
+          {"name": "葛根", "qty": "12.0 g"}
+        ],
+        "algorithm_lens": ["#P1-001 主方樹", "#P1-013 症狀加權"],
+        "rationale": "桂枝湯證 + 項背強 → 加葛根",
+        "contraindications": [],
+        "source_text": "「太陽病，項背強几几，反汗出惡風者，桂枝加葛根湯主之。」",
+        "source_ref": "傷寒論 宋本 14 條"
+      },
+      {
+        "name": "桂枝加厚朴杏子湯",
+        "syndrome": "太陽中風 + 喘",
+        "typical_categories": ["寒熱", "汗出", "呼吸"],
+        "composition": [
+          {"name": "桂枝湯", "qty": "原方"},
+          {"name": "厚朴", "qty": "6.0 g"},
+          {"name": "杏仁", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-001 主方樹", "#P1-008 條件變量"],
+        "rationale": "桂枝湯證 + 喘 → 加厚朴杏子",
+        "contraindications": [],
+        "source_text": "「喘家作，桂枝湯加厚朴杏子佳。」",
+        "source_ref": "傷寒論 宋本 18 條"
+      },
+      {
+        "name": "麻黃湯",
+        "syndrome": "太陽傷寒（寒傷營）",
+        "typical_categories": ["寒熱", "汗出", "頭身", "脈"],
+        "composition": [
+          {"name": "麻黃", "qty": "9.0 g"},
+          {"name": "桂枝", "qty": "6.0 g"},
+          {"name": "杏仁", "qty": "9.0 g"},
+          {"name": "甘草", "qty": "3.0 g"}
+        ],
+        "algorithm_lens": ["#P1-001 主方樹", "#P1-005 傷寒中風鑑別"],
+        "rationale": "無汗 + 脈浮緊 + 體痛 → 麻黃湯",
+        "contraindications": ["汗家、衄家、瘡家"],
+        "source_text": "「太陽病，頭痛，發熱，身疼，腰痛，骨節疼痛，惡風，無汗而喘者，麻黃湯主之。」",
+        "source_ref": "傷寒論 宋本 35 條"
+      },
+      {
+        "name": "五苓散",
+        "syndrome": "太陽蓄水（小便不利 + 口渴）",
+        "typical_categories": ["二便", "飲食", "寒熱"],
+        "composition": [
+          {"name": "豬苓", "qty": "9.0 g"},
+          {"name": "澤瀉", "qty": "15.0 g"},
+          {"name": "白朮", "qty": "9.0 g"},
+          {"name": "茯苓", "qty": "9.0 g"},
+          {"name": "桂枝", "qty": "6.0 g"}
+        ],
+        "algorithm_lens": ["#P1-010 蓄水證", "#P1-011 口渴鑑別"],
+        "rationale": "小便不利 + 微熱 + 消渴 → 五苓散",
+        "contraindications": [],
+        "source_text": "「太陽病，發汗後…若脈浮，小便不利，微熱消渴者，五苓散主之。」",
+        "source_ref": "傷寒論 宋本 71 條"
+      }
+    ],
+
+    "陽明": [
+      {
+        "name": "白虎湯",
+        "syndrome": "陽明氣分熱盛（四大症）",
+        "typical_categories": ["寒熱", "汗出", "飲食", "脈"],
+        "composition": [
+          {"name": "石膏", "qty": "30.0 g"},
+          {"name": "知母", "qty": "9.0 g"},
+          {"name": "甘草", "qty": "3.0 g"},
+          {"name": "粳米", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-013 錯誤注入", "#P1-014 錯誤復原", "#P1-018 救逆判斷"],
+        "rationale": "大汗 + 大渴 + 脈洪大 + 大熱 → 白虎湯",
+        "contraindications": ["表證未解禁用"],
+        "source_text": "「三陽合病，腹滿身重，難以轉側，口不仁，面垢，譫語遺尿…若自汗出者，白虎湯主之。」",
+        "source_ref": "傷寒論 宋本 219 條"
+      },
+      {
+        "name": "白虎加人參湯",
+        "syndrome": "白虎湯證 + 氣陰兩傷（服桂枝湯大汗後救逆）",
+        "typical_categories": ["寒熱", "汗出", "飲食", "精神情緒"],
+        "composition": [
+          {"name": "白虎湯", "qty": "原方"},
+          {"name": "人參", "qty": "6.0 g"}
+        ],
+        "algorithm_lens": ["#P1-013 錯誤注入", "#P1-014 錯誤復原", "#P1-022 救逆判斷"],
+        "rationale": "白虎湯證 + 大煩渴不解 + 脈洪大 → 加人參",
+        "contraindications": [],
+        "source_text": "「服桂枝湯，大汗出後，大煩渴不解，脈洪大者，白虎加人參湯主之。」",
+        "source_ref": "傷寒論 宋本 26 條"
+      },
+      {
+        "name": "承氣湯（大承氣）",
+        "syndrome": "陽明腑實（痞滿燥實）",
+        "typical_categories": ["二便", "胸腹", "寒熱", "精神情緒"],
+        "composition": [
+          {"name": "大黃", "qty": "12.0 g"},
+          {"name": "芒硝", "qty": "9.0 g"},
+          {"name": "厚朴", "qty": "15.0 g"},
+          {"name": "枳實", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-016 腑實證", "#P1-017 探針干預"],
+        "rationale": "便秘 + 潮熱 + 譫語 + 腹滿痛 → 大承氣",
+        "contraindications": ["表證未解禁用"],
+        "source_text": "「痞滿燥實俱全者，大承氣湯主之。」",
+        "source_ref": "傷寒論 宋本 208 條"
+      },
+      {
+        "name": "小承氣湯",
+        "syndrome": "陽明腑實（輕）",
+        "typical_categories": ["二便", "胸腹"],
+        "composition": [
+          {"name": "大黃", "qty": "12.0 g"},
+          {"name": "厚朴", "qty": "6.0 g"},
+          {"name": "枳實", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-016 腑實證", "#P1-017 探針干預"],
+        "rationale": "試探性探針：少與小承氣 → 觀察轉矢氣",
+        "contraindications": [],
+        "source_text": "「若不大便六七日，恐有燥屎，欲知之法，少與小承氣湯…」",
+        "source_ref": "傷寒論 宋本 209 條"
+      },
+      {
+        "name": "調胃承氣湯",
+        "syndrome": "陽明腑實（調胃）",
+        "typical_categories": ["二便", "精神情緒"],
+        "composition": [
+          {"name": "大黃", "qty": "12.0 g"},
+          {"name": "芒硝", "qty": "9.0 g"},
+          {"name": "甘草", "qty": "6.0 g"}
+        ],
+        "algorithm_lens": ["#P1-016 腑實證"],
+        "rationale": "便秘 + 蒸蒸發熱 → 調胃承氣",
+        "contraindications": [],
+        "source_text": "「太陽病三日，發汗不解，蒸蒸發熱者，屬胃也，調胃承氣湯主之。」",
+        "source_ref": "傷寒論 宋本 248 條"
+      }
+    ],
+
+    "少陽": [
+      {
+        "name": "小柴胡湯",
+        "syndrome": "少陽病（半表半裡）",
+        "typical_categories": ["寒熱", "胸腹", "飲食", "噁心嘔吐", "精神情緒"],
+        "composition": [
+          {"name": "柴胡", "qty": "12.0 g"},
+          {"name": "黃芩", "qty": "9.0 g"},
+          {"name": "人參", "qty": "6.0 g"},
+          {"name": "半夏", "qty": "9.0 g"},
+          {"name": "甘草", "qty": "5.0 g"},
+          {"name": "生薑", "qty": "9.0 g"},
+          {"name": "大棗", "qty": "4 枚"}
+        ],
+        "algorithm_lens": ["#P1-002 半表半裡", "#P1-003 條件分支", "#P1-007 鑑別"],
+        "rationale": "往來寒熱 + 胸脇苦滿 + 默默不欲食 + 心煩喜嘔 → 小柴胡",
+        "contraindications": ["表證未解先和、裡證已成立先下"],
+        "source_text": "「往來寒熱，胸脇苦滿，嘿嘿不欲飲食，心煩喜嘔…小柴胡湯主之。」",
+        "source_ref": "傷寒論 宋本 96 條"
+      },
+      {
+        "name": "大柴胡湯",
+        "syndrome": "少陽兼陽明裡實",
+        "typical_categories": ["寒熱", "胸腹", "二便", "飲食"],
+        "composition": [
+          {"name": "小柴胡湯", "qty": "去人參、甘草"},
+          {"name": "大黃", "qty": "6.0 g"},
+          {"name": "枳實", "qty": "9.0 g"},
+          {"name": "芍藥", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-016 腑實證", "#P1-003 條件分支"],
+        "rationale": "少陽 + 陽明裡實 → 大柴胡",
+        "contraindications": [],
+        "source_text": "「太陽病，過經十餘日…嘔不止，心下急，郁郁微煩者，為未解也，與大柴胡湯下之則愈。」",
+        "source_ref": "傷寒論 宋本 103 條"
+      },
+      {
+        "name": "柴胡桂枝湯",
+        "syndrome": "少陽兼表（太陽少陽合病）",
+        "typical_categories": ["寒熱", "汗出", "胸腹", "噁心嘔吐"],
+        "composition": [
+          {"name": "小柴胡湯", "qty": "半量"},
+          {"name": "桂枝湯", "qty": "半量"}
+        ],
+        "algorithm_lens": ["#P1-003 條件分支", "#P1-026 合病"],
+        "rationale": "太陽少陽合病 → 柴胡桂枝各半",
+        "contraindications": [],
+        "source_text": "「傷寒六七日，發熱微惡寒，支節煩疼，微嘔，心下支結，外證未去者，柴胡桂枝湯主之。」",
+        "source_ref": "傷寒論 宋本 146 條"
+      }
+    ],
+
+    "太陰": [
+      {
+        "name": "理中湯",
+        "syndrome": "太陰虛寒（脾陽虛）",
+        "typical_categories": ["二便", "胸腹", "飲食", "精神情緒"],
+        "composition": [
+          {"name": "人參", "qty": "9.0 g"},
+          {"name": "乾薑", "qty": "9.0 g"},
+          {"name": "白朮", "qty": "9.0 g"},
+          {"name": "炙甘草", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-019 脾陽虛", "#P1-020 中焦虛寒"],
+        "rationale": "腹滿 + 自利 + 食不下 + 不渴 → 理中湯",
+        "contraindications": ["表證未解禁用"],
+        "source_text": "「自利不渴者，屬太陰，以其臟有寒故也，當溫之，宜服四逆輩。」",
+        "source_ref": "傷寒論 宋本 277 條"
+      },
+      {
+        "name": "小建中湯",
+        "syndrome": "太陰虛寒 + 腹中急痛",
+        "typical_categories": ["胸腹", "二便", "飲食"],
+        "composition": [
+          {"name": "桂枝湯", "qty": "原方"},
+          {"name": "飴糖", "qty": "30.0 g"}
+        ],
+        "algorithm_lens": ["#P1-021 建中法"],
+        "rationale": "腹中急痛 + 心中悸而煩 → 小建中",
+        "contraindications": [],
+        "source_text": "「傷寒二三日，心中悸而煩者，小建中湯主之。」",
+        "source_ref": "傷寒論 宋本 102 條"
+      },
+      {
+        "name": "桂枝加芍藥湯",
+        "syndrome": "太陽誤下轉太陰（腹滿時痛）",
+        "typical_categories": ["胸腹"],
+        "composition": [
+          {"name": "桂枝湯", "qty": "原方"},
+          {"name": "芍藥", "qty": "加重（18.0 g）"}
+        ],
+        "algorithm_lens": ["#P1-024 誤下傳變", "#P1-025 太陰腹痛"],
+        "rationale": "桂枝湯證 + 腹滿時痛 → 加倍芍藥",
+        "contraindications": [],
+        "source_text": "「本太陽病，醫反下之，因爾腹滿時痛者，屬太陰也，桂枝加芍藥湯主之。」",
+        "source_ref": "傷寒論 宋本 279 條"
+      }
+    ],
+
+    "少陰": [
+      {
+        "name": "四逆湯",
+        "syndrome": "少陰寒化（陽虛四逆）",
+        "typical_categories": ["寒熱", "二便", "精神情緒", "脈"],
+        "composition": [
+          {"name": "附子", "qty": "9.0 g（生用）"},
+          {"name": "乾薑", "qty": "9.0 g"},
+          {"name": "炙甘草", "qty": "12.0 g"}
+        ],
+        "algorithm_lens": ["#P1-027 少陰寒化", "#P1-028 回陽救逆"],
+        "rationale": "四肢厥冷 + 但欲寐 + 脈微細 + 下利清穀 → 四逆湯",
+        "contraindications": ["陰虛內熱禁用"],
+        "source_text": "「少陰病，脈沉者，急溫之，宜四逆湯。」",
+        "source_ref": "傷寒論 宋本 323 條"
+      },
+      {
+        "name": "真武湯",
+        "syndrome": "少陰水泛（陽虛水停）",
+        "typical_categories": ["寒熱", "二便", "頭身"],
+        "composition": [
+          {"name": "茯苓", "qty": "9.0 g"},
+          {"name": "芍藥", "qty": "9.0 g"},
+          {"name": "白朮", "qty": "6.0 g"},
+          {"name": "生薑", "qty": "9.0 g"},
+          {"name": "附子", "qty": "9.0 g（炮）"}
+        ],
+        "algorithm_lens": ["#P1-029 水泛", "#P1-030 溫陽利水"],
+        "rationale": "四肢沉重 + 小便不利 + 腹痛下利 + 脈沉 → 真武湯",
+        "contraindications": [],
+        "source_text": "「少陰病，二三日不已，至四五日，腹痛，小便不利，四肢沉重疼痛，自下利者，此為有水氣，其人或咳，或小便利，或下利，或嘔者，真武湯主之。」",
+        "source_ref": "傷寒論 宋本 316 條"
+      },
+      {
+        "name": "麻黃附子細辛湯",
+        "syndrome": "少陰表證（太少兩感）",
+        "typical_categories": ["寒熱", "精神情緒", "脈"],
+        "composition": [
+          {"name": "麻黃", "qty": "6.0 g"},
+          {"name": "附子", "qty": "9.0 g（炮）"},
+          {"name": "細辛", "qty": "3.0 g"}
+        ],
+        "algorithm_lens": ["#P1-031 太少兩感", "#P1-026 合病"],
+        "rationale": "少陰病 + 發熱 + 脈沉 → 麻黃附子細辛",
+        "contraindications": [],
+        "source_text": "「少陰病，始得之，反發熱，脈沉者，麻黃附子細辛湯主之。」",
+        "source_ref": "傷寒論 宋本 301 條"
+      },
+      {
+        "name": "黃連阿膠湯",
+        "syndrome": "少陰熱化（陰虛火旺、心煩不寐）",
+        "typical_categories": ["精神情緒", "睡眠"],
+        "composition": [
+          {"name": "黃連", "qty": "12.0 g"},
+          {"name": "黃芩", "qty": "6.0 g"},
+          {"name": "芍藥", "qty": "6.0 g"},
+          {"name": "雞子黃", "qty": "2 枚"},
+          {"name": "阿膠", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-032 少陰熱化", "#P1-033 陰虛火旺"],
+        "rationale": "心煩 + 不得臥 + 舌紅少苔 → 黃連阿膠",
+        "contraindications": ["陽虛寒盛禁用"],
+        "source_text": "「少陰病，得之二三日以上，心中煩，不得臥，黃連阿膠湯主之。」",
+        "source_ref": "傷寒論 宋本 303 條"
+      }
+    ],
+
+    "厥陰": [
+      {
+        "name": "烏梅丸",
+        "syndrome": "厥陰蛔厥（上熱下寒 + 蛔擾）",
+        "typical_categories": ["胸腹", "飲食", "二便", "噁心嘔吐"],
+        "composition": [
+          {"name": "烏梅", "qty": "30.0 g"},
+          {"name": "細辛", "qty": "6.0 g"},
+          {"name": "乾薑", "qty": "9.0 g"},
+          {"name": "黃連", "qty": "12.0 g"},
+          {"name": "當歸", "qty": "6.0 g"},
+          {"name": "附子", "qty": "6.0 g"},
+          {"name": "蜀椒", "qty": "6.0 g"},
+          {"name": "桂枝", "qty": "6.0 g"},
+          {"name": "人參", "qty": "6.0 g"},
+          {"name": "黃柏", "qty": "6.0 g"}
+        ],
+        "algorithm_lens": ["#P1-034 厥陰病", "#P1-035 上熱下寒", "#P1-036 蛔厥"],
+        "rationale": "消渴 + 氣上撞心 + 飢不欲食 + 嘔吐蛔 → 烏梅丸",
+        "contraindications": [],
+        "source_text": "「傷寒，脈微而厥，至七八日膚冷，其人躁無暫安時者，此為臟厥，非蛔厥也。蛔厥者，其人當吐蛔。今病者靜而復時煩者，此為臟寒，蛔上入其膈，故煩，須臾復止，得食而嘔，又煩者，蛔聞食臭出，其人常自吐蛔。蛔厥者，烏梅丸主之。」",
+        "source_ref": "傷寒論 宋本 338 條"
+      },
+      {
+        "name": "白頭翁湯",
+        "syndrome": "厥陰熱利（下利膿血）",
+        "typical_categories": ["二便", "寒熱"],
+        "composition": [
+          {"name": "白頭翁", "qty": "15.0 g"},
+          {"name": "黃柏", "qty": "9.0 g"},
+          {"name": "黃連", "qty": "9.0 g"},
+          {"name": "秦皮", "qty": "9.0 g"}
+        ],
+        "algorithm_lens": ["#P1-037 厥陰熱利"],
+        "rationale": "下利膿血 + 腹痛 + 渴欲飲水 → 白頭翁湯",
+        "contraindications": ["虛寒下利禁用"],
+        "source_text": "「熱利下重者，白頭翁湯主之。」",
+        "source_ref": "傷寒論 宋本 371 條"
+      },
+      {
+        "name": "當歸四逆湯",
+        "syndrome": "厥陰血虛寒厥（手足厥寒 + 脈細欲絕）",
+        "typical_categories": ["寒熱", "脈"],
+        "composition": [
+          {"name": "當歸", "qty": "9.0 g"},
+          {"name": "桂枝", "qty": "9.0 g"},
+          {"name": "芍藥", "qty": "9.0 g"},
+          {"name": "細辛", "qty": "6.0 g"},
+          {"name": "甘草", "qty": "6.0 g"},
+          {"name": "通草", "qty": "6.0 g"},
+          {"name": "大棗", "qty": "8 枚"}
+        ],
+        "algorithm_lens": ["#P1-038 血虛寒厥", "#P1-039 養血通脈"],
+        "rationale": "手足厥寒 + 脈細欲絕 + 無裡寒下利 → 當歸四逆",
+        "contraindications": ["陽明實熱禁用"],
+        "source_text": "「手足厥寒，脈細欲絕者，當歸四逆湯主之。」",
+        "source_ref": "傷寒論 宋本 351 條"
+      }
+    ]
+  }
+}

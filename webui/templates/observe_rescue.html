@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}救逆模式 S4-3{% endblock %}
+
+{% block content %}
+<div class="rescue-banner">
+  <span style="font-size: 18px;">⚠</span>
+  <span><strong>Rescue mode active</strong> — previous formula produced adverse reaction</span>
+</div>
+
+<h1>救逆模式 (S4-3)</h1>
+
+<div class="card">
+  <div class="card-title">前次處方</div>
+  <div style="font-size: 18px; font-weight: 600; color: var(--danger-500);">⏹ STOP {{ old_formula }}</div>
+</div>
+
+<div class="card">
+  <div class="card-title">Source matching</div>
+  <div class="source-quote">{{ rescue_source }}</div>
+</div>
+
+<form method="POST" action="{{ url_for('observe_rescue') }}" id="rescue-form">
+<div class="card" style="border-left: 6px solid var(--danger-500);">
+  <div class="card-title">Recommendation</div>
+  <div style="font-size: 14px; color: #991B1B;">▶ Start <strong>{{ rescue_formula }}</strong></div>
+
+  <div class="symptom-options" style="margin-top: var(--space-3);">
+    <label style="display: flex; align-items: center; gap: 8px;">
+      <input type="radio" name="new_formula" value="{{ rescue_formula }}" checked>
+      <span>接受推薦: <strong>{{ rescue_formula }}</strong></span>
+    </label>
+    <label style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+      <input type="radio" name="new_formula" value="重新推論">
+      <span>不採用、回 S3 重新推論 (帶新症狀)</span>
+    </label>
+    <label style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+      <input type="radio" name="new_formula" value="其他">
+      <span>其他: </span>
+      <input type="text" name="other_formula" placeholder="方名" style="width: 140px; padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px;">
+    </label>
+  </div>
+
+  <div style="margin-top: var(--space-3);">
+    <div class="card-title">救逆理由</div>
+    <textarea name="reason" rows="2" placeholder="例: 服桂枝湯後大汗出、煩渴、脈洪大 → 轉白虎加人參" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;"></textarea>
+  </div>
+</div>
+
+<div style="display: flex; gap: var(--space-2); margin-top: var(--space-4); justify-content: space-between;">
+  <a href="{{ url_for('observe') }}" class="btn btn-secondary">← 服藥觀察</a>
+  <button type="submit" class="btn btn-danger">確認救逆 → 重新推論</button>
+</div>
+</form>
+{% endblock %}
