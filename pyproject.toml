@@ -9,6 +9,13 @@ description = "傷寒論臨床決策輔助 WebUI — 八綱/六經/方證推論�
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 dependencies = ["flask>=3.0", "pillow>=10.0"]
 
 [project.optional-dependencies]

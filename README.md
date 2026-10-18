@@ -1,9 +1,8 @@
 # 傷寒論臨床決策輔助 WebUI (shanghanlun-assistant)
 
 [![PyPI](https://img.shields.io/pypi/v/shanghanlun-assistant)](https://pypi.org/project/shanghanlun-assistant/)
-[![Python](https://img.shields.io/pypi/pyversions/shanghanlun-assistant)](https://pypi.org/project/shanghanlun-assistant/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://pypi.org/project/shanghanlun-assistant/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Publish](https://github.com/alanpaul1969/shanghanlun-assistant/actions/workflows/publish.yml/badge.svg)](https://github.com/alanpaul1969/shanghanlun-assistant/actions/workflows/publish.yml)
 [![npm](https://img.shields.io/npm/v/shanghanlun-assistant)](https://www.npmjs.com/package/shanghanlun-assistant)
 
 以《傷寒論》六經辨證為骨架的臨床決策支援 WebUI：八綱快診 → 六經定位 → LLM 追問 → 方證推論 → 醫囑選方 → 服藥觀察 → 加減/救逆。
