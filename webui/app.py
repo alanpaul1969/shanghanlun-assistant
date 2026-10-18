@@ -1233,6 +1233,31 @@ def settings_page():
     )
 
 
+# ── v0.6.2 診次歷史 ──────────────────────────────────
+@app.route("/history")
+def history_page():
+    """列出所有有選定方證的真實診次 (新→舊), 點入看該診次的觀察紀錄"""
+    from session_store import list_sessions
+    import datetime as _dt
+    sessions = []
+    for row in list_sessions():
+        d = row["data"]
+        lp = d.get("last_prescription") or {}
+        if not lp.get("name"):
+            continue
+        sessions.append({
+            "sid": row["sid"][:8],
+            "date": _dt.datetime.fromtimestamp(row["updated_at"]).strftime("%Y-%m-%d %H:%M"),
+            "chief": (d.get("bagang", {}) or {}).get("chief_complaint", "") or "（未填主訴）",
+            "formula": lp.get("name", "?"),
+            "match": lp.get("match", 0),
+            "meridian": next(iter((d.get("differential", {}) or {}).keys()), ""),
+            "med_logs": len(d.get("medication_log", []) or []),
+            "is_current": row["sid"] == _s()._sid,
+        })
+    return render_template("history.html", sessions=sessions)
+
+
 @app.route("/healthz")
 def healthz():
     return {"status": "ok", "service": "shanghanlun-webui", "version": APP_VERSION}

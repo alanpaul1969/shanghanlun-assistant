@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}診次歷史{% endblock %}
+
+{% block content %}
+<h1>📋 診次歷史</h1>
+<p class="muted">共 {{ sessions|length }} 個診次（有選定方證的 session），新→舊。點「繼續」進入該診次的服藥觀察。</p>
+
+{% if not sessions %}
+<div class="card muted" style="padding: var(--space-5); text-align: center;">
+  還沒有診次紀錄 — 回<a href="{{ url_for('home') }}">首頁</a>開始新診。
+</div>
+{% endif %}
+
+<div class="session-list">
+  {% for s in sessions %}
+  <div class="card session-card" {% if s.is_current %}style="border-left: 4px solid var(--brand-500);"{% endif %}>
+    <div class="head">
+      <div>
+        <div class="date">⏱ {{ s.date }} · <span class="muted">{{ s.sid }}</span>
+          {% if s.is_current %}<span class="pill pill-brand" style="font-size: 10px;">目前</span>{% endif %}
+        </div>
+        <div class="syndrome">{{ s.chief }}</div>
+      </div>
+      <span class="pill pill-brand">{{ s.match }}%</span>
+    </div>
+    <div class="prescription">選定方證：{{ s.formula }}{% if s.meridian %} · {{ s.meridian }}{% endif %}</div>
+    <div class="status muted">服藥觀察紀錄：{{ s.med_logs }} 筆</div>
+    <a href="{{ url_for('observe') }}" class="btn btn-secondary" {% if not s.is_current %}style="opacity: 0.5;" title="僅目前 session 可直接進入觀察頁"{% endif %}>繼續 →</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

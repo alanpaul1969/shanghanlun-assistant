@@ -99,3 +99,20 @@ def delete_session(sid: str):
 
 # 啟動時建表
 init_db()
+
+
+def list_sessions():
+    """v0.6.2: 列出所有 sessions (新→舊), 供 /history 頁"""
+    out = []
+    with _lock, _get_conn() as c:
+        rows = c.execute(
+            "SELECT sid, data, created_at, updated_at FROM sessions ORDER BY updated_at DESC"
+        ).fetchall()
+    import json
+    for sid, blob, created, updated in rows:
+        try:
+            d = json.loads(blob)
+        except Exception:
+            continue
+        out.append({"sid": sid, "data": d, "created_at": created, "updated_at": updated})
+    return out

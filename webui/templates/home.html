@@ -33,7 +33,7 @@
   &nbsp;
   <a href="{{ url_for('intake_root') }}" class="btn btn-secondary btn-lg">📋 詳診 (完整 8 步)</a>
   &nbsp;
-  <a href="#sessions" class="btn btn-ghost">查看進行中診次 →</a>
+  <a href="{{ url_for('history_page') }}" class="btn btn-ghost">📋 診次歷史 →</a>
 </div>
 
 <h2 id="sessions">目前診次</h2>
@@ -57,24 +57,8 @@
 </div>
 {% endif %}
 
-<h2 id="demo-sessions">範例診次 <span class="muted" style="font-size: 12px; font-weight: normal;">(展示用假資料, 非真實紀錄)</span></h2>
-<div class="session-list">
-  {% for s in active_sessions %}
-  <div class="card session-card" style="opacity: 0.65;">
-    <div class="head">
-      <div>
-        <div class="date">⏱ {{ s.date }}</div>
-        <div class="syndrome">{{ s.syndrome }}</div>
-      </div>
-      <span class="pill">{{ s.match }}%</span>
-    </div>
-    <div class="prescription">候選方證：{{ s.prescription }}</div>
-    <div class="status muted">狀態：{{ s.status }}</div>
-  </div>
-  {% endfor %}
-</div>
+<p class="muted" style="font-size: 13px;">更早的診次見 <a href="{{ url_for('history_page') }}">📋 診次歷史</a>。</p>
 
-</div>
   </a>
   <a href="{{ url_for('img', filename='P70_og_twitter.png') }}" target="_blank">
     <div class="card" style="padding: var(--space-2);"><img src="{{ url_for('img', filename='P70_og_twitter.png') }}" alt="P70" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm);"><div class="muted" style="font-size: 11px; margin-top: 4px;">P70 OG card</div></div>
