@@ -4,7 +4,23 @@
 
 {% block content %}
 <h1>📋 診次歷史</h1>
-<p class="muted">共 {{ sessions|length }} 個診次（有選定方證的 session），新→舊。點「繼續」進入該診次的服藥觀察。</p>
+<form method="get" action="{{ url_for('history_page') }}" style="display: flex; gap: var(--space-2); margin-bottom: var(--space-3); flex-wrap: wrap;">
+  <input name="q" value="{{ q }}" placeholder="搜尋主訴 / 方劑 / 經絡 / 症狀…"
+         style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md);">
+  <button type="submit" class="btn btn-secondary">搜尋</button>
+  {% if q %}<a href="{{ url_for('history_page') }}" class="btn btn-ghost">清除</a>{% endif %}
+</form>
+<div style="margin-bottom: var(--space-3); font-size: 12px; display: flex; gap: var(--space-2); align-items: center;">
+  <span class="muted">統計/研究用匯出（去識別化）:</span>
+  <a class="btn btn-ghost" href="{{ url_for('history_export', format='json', q=q) }}">JSON</a>
+  <a class="btn btn-ghost" href="{{ url_for('history_export', format='csv', q=q) }}">CSV</a>
+  <a class="btn btn-ghost" href="{{ url_for('history_export', format='json', strip_gender=1) }}">JSON（剝除性別）</a>
+  <details style="font-size: 11px;"><summary class="muted" style="cursor: pointer;">匯出欄位說明</summary>
+    <span class="muted">含：假名化 case_id（SHA-256 不可逆）、年齡區間、八綱、症狀 id、方證、服藥觀察數值。<br>
+    剝除：session id、姓名、確切年齡、主訴與所有自由文字。gender 可選剝除。</span>
+  </details>
+</div>
+<p class="muted">共 {{ sessions|length }} 個診次{% if q %}（搜尋「{{ q }}」）{% endif %}，新→舊。診次含選定方證者永久保留。</p>
 
 {% if not sessions %}
 <div class="card muted" style="padding: var(--space-5); text-align: center;">

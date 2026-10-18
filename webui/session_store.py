@@ -77,10 +77,18 @@ def get_session(sid: str) -> dict | None:
     return json.loads(blob.decode("utf-8"))
 
 
+NO_EXPIRY = 4102444800  # 2100-01-01 — 診次 (含選定方證) 永久保留
+
+
+def _is_medical_record(data: dict) -> bool:
+    """有選定方證 = 診次 = 病歷, 永久保留不過期"""
+    return bool((data.get("last_prescription") or {}).get("name"))
+
+
 def update_session(sid: str, data: dict, ttl_seconds: int = 30 * 86400) -> bool:
-    """更新 session, 順便 reset expires"""
+    """更新 session, 順便 reset expires (診次則設為不過期)"""
     now = int(time.time())
-    expires = now + ttl_seconds
+    expires = NO_EXPIRY if _is_medical_record(data) else now + ttl_seconds
     blob = json.dumps(data, ensure_ascii=False).encode("utf-8")
     with _lock, _get_conn() as c:
         cur = c.execute(
@@ -116,3 +124,21 @@ def list_sessions():
             continue
         out.append({"sid": sid, "data": d, "created_at": created, "updated_at": updated})
     return out
+
+
+def migrate_preserve_records():
+    """v0.6.2: 一次性 migration — 既有的診次 (含 last_prescription) 設為不過期"""
+    n = 0
+    with _lock, _get_conn() as c:
+        rows = c.execute("SELECT sid, data FROM sessions WHERE expires_at < ?",
+                         (NO_EXPIRY,)).fetchall()
+        for sid, blob in rows:
+            try:
+                d = json.loads(blob)
+            except Exception:
+                continue
+            if _is_medical_record(d):
+                c.execute("UPDATE sessions SET expires_at = ? WHERE sid = ?",
+                          (NO_EXPIRY, sid))
+                n += 1
+    return n

@@ -20,7 +20,7 @@ Flask 3.x skeleton — Phase 1 MVP, v2 visual direction.
 Phase 1 MVP 範圍 = 上面 5 個核心頁 + Library demo (其餘為 v2.1 之後做)。
 """
 import datetime
-from flask import Flask, render_template, send_from_directory, abort, request, redirect, url_for
+from flask import Flask, render_template, send_from_directory, abort, request, redirect, url_for, Response
 from persistent_session import PersistentSession, init_app as init_session_app
 from i18n import init_i18n, t as _t
 from pathlib import Path
@@ -1239,6 +1239,7 @@ def history_page():
     """列出所有有選定方證的真實診次 (新→舊), 點入看該診次的觀察紀錄"""
     from session_store import list_sessions
     import datetime as _dt
+    q = (request.args.get("q", "") or "").strip().lower()
     sessions = []
     for row in list_sessions():
         d = row["data"]
@@ -1255,7 +1256,53 @@ def history_page():
             "med_logs": len(d.get("medication_log", []) or []),
             "is_current": row["sid"] == _s()._sid,
         })
-    return render_template("history.html", sessions=sessions)
+    if q:
+        def _match(s):
+            syms = " ".join(" ".join(v) for v in (session_map.get(s["sid"], {}) or {}).values())
+            hay = f'{s["chief"]} {s["formula"]} {s["meridian"]} {s["sid"]} {syms}'.lower()
+            return q in hay
+        # symptoms 快照 (搜尋用)
+        session_map = {r["sid"][:8]: r["data"].get("symptoms") for r in list_sessions()}
+        sessions = [s for s in sessions if _match(s)]
+    return render_template("history.html", sessions=sessions, q=q)
+
+
+@app.route("/history/export")
+def history_export():
+    """去識別化匯出 (統計/研究用): ?format=json|csv&strip_gender=1"""
+    from session_store import list_sessions
+    from deid import deidentify
+    import csv as _csv
+    import io as _io
+    import json as _json
+    strip_gender = request.args.get("strip_gender") == "1"
+    rows = [r for r in list_sessions() if (r["data"].get("last_prescription") or {}).get("name")]
+    if request.args.get("format") == "csv":
+        buf = _io.StringIO()
+        w = _csv.writer(buf)
+        w.writerow(["case_id", "updated_at", "age_band", "gender", "body_type",
+                    "chronic_history", "on_medication", "pregnant", "allergy",
+                    "bagang", "symptoms", "selected_formula", "formula_match",
+                    "med_log_count"])
+        for r in rows:
+            e = deidentify(r, strip_gender=strip_gender)
+            w.writerow([e["case_id"], e["updated_at"], e["age_band"], e["gender"] or "",
+                        e["body_type"] or "", e["chronic_history"], e["on_medication"],
+                        e["pregnant"], e["allergy"],
+                        _json.dumps(e["bagang"], ensure_ascii=False),
+                        _json.dumps(e["symptoms"], ensure_ascii=False),
+                        e["selected_formula"], e["formula_match"],
+                        len(e["medication_log"])])
+        out = buf.getvalue()
+        mime = "text/csv"
+        fname = "shanghanlun_cases_deid.csv"
+    else:
+        out = _json.dumps([deidentify(r, strip_gender=strip_gender) for r in rows],
+                         ensure_ascii=False, indent=1)
+        mime = "application/json"
+        fname = "shanghanlun_cases_deid.json"
+    return Response(out, mimetype=mime,
+                    headers={"Content-Disposition": f"attachment; filename={fname}"})
 
 
 @app.route("/healthz")
@@ -1264,6 +1311,10 @@ def healthz():
 
 
 # ── 啟動 ──────────────────────────────────────────────
+# 啟動時保證既有診次永久保留
+from session_store import migrate_preserve_records
+migrate_preserve_records()
+
 if __name__ == "__main__":
     import sys
     port = int(os.environ.get("PORT", 8501))
