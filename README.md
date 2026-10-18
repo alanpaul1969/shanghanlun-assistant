@@ -24,11 +24,6 @@ pip install shanghanlun-assistant   # 或 clone 後: cd webui && pip install fla
 python3 -m webui.app                # :8501, http://localhost:8501/shanghanlun/
 ```
 
-## 發版 SOP
-
-改 `pyproject.toml` 的 `version` → commit → `git tag vX.Y.Z && git push origin vX.Y.Z`
-→ GitHub Actions 經 Trusted Publisher 自動發布到 PyPI（app 的版號會自動讀套件 metadata）。
-
 LLM 端點（可選，無則規則引擎獨立運作）：llama.cpp :8080（主模型）、:8085 thinking-off proxy、:8082 jina embeddings。
 RAG 語料重建：`corpus/build_rag.py`（需先 clone TCM-Ancient-Books，見 script 內說明）。
 
