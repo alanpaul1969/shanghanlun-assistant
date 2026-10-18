@@ -25,4 +25,4 @@ jobs:
         run: |
           npm install -g npm@latest   # OIDC trusted publishing 需要 npm >= 11.5.1
           cd npm-scaffold
-          npm publish --access public
+          npm publish --access public --provenance
