@@ -1181,7 +1181,7 @@ try:
     from importlib.metadata import version as _pkg_version
     APP_VERSION = _pkg_version("shanghanlun-assistant")
 except Exception:
-    APP_VERSION = "0.6.1"
+    APP_VERSION = "0.6.3"
 
 @app.context_processor
 def _inject_version():

@@ -4,10 +4,11 @@
 [![Python](https://img.shields.io/pypi/pyversions/shanghanlun-assistant)](https://pypi.org/project/shanghanlun-assistant/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Publish](https://github.com/alanpaul1969/shanghanlun-assistant/actions/workflows/publish.yml/badge.svg)](https://github.com/alanpaul1969/shanghanlun-assistant/actions/workflows/publish.yml)
+[![npm](https://img.shields.io/npm/v/shanghanlun-assistant)](https://www.npmjs.com/package/shanghanlun-assistant)
 
 以《傷寒論》六經辨證為骨架的臨床決策支援 WebUI：八綱快診 → 六經定位 → LLM 追問 → 方證推論 → 醫囑選方 → 服藥觀察 → 加減/救逆。
 
-## 功能（v0.6.1）
+## 功能
 
 - **雙診模式**：⚡ 快診（主訴 LLM 抽取 + 八綱 4 題）/ 📋 詳診（望聞問切 8 步）
 - **推論引擎**：症狀×六經權重矩陣 + 互斥組 + 鑑別問答 + 病人 modifier（孕/老/小/病史×方證禁忌）+ 救逆標籤
