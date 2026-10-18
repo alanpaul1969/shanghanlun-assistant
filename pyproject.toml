@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shanghanlun-assistant"
-version = "0.6.2"
+version = "0.6.3"
 description = "傷寒論臨床決策輔助 WebUI — 八綱/六經/方證推論、七典RAG、LLM追問/選方/加減分析"
 readme = "README.md"
 requires-python = ">=3.10"
