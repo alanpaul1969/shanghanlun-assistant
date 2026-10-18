@@ -35,8 +35,6 @@ python3 -m webui.app                # :8501, http://localhost:8501/shanghanlun/
 
 ## RAG 語料（可選）
 
-## RAG 語料（可選）
-
 語料檔（246MB 古籍 clone + embedding 向量）不入 git，由腳本重建：
 
 ```bash
