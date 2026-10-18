@@ -1176,7 +1176,12 @@ def img(filename):
     return send_from_directory(str(IMG_DIR), filename)
 
 
-APP_VERSION = "0.6.1"
+# 版號單一來源 = pyproject.toml; pip 安裝後自動讀 metadata, 原始碼執行時 fallback
+try:
+    from importlib.metadata import version as _pkg_version
+    APP_VERSION = _pkg_version("shanghanlun-assistant")
+except Exception:
+    APP_VERSION = "0.6.1"
 
 @app.context_processor
 def _inject_version():

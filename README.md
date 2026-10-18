@@ -1,5 +1,10 @@
 # 傷寒論臨床決策輔助 WebUI (shanghanlun-assistant)
 
+[![PyPI](https://img.shields.io/pypi/v/shanghanlun-assistant)](https://pypi.org/project/shanghanlun-assistant/)
+[![Python](https://img.shields.io/pypi/pyversions/shanghanlun-assistant)](https://pypi.org/project/shanghanlun-assistant/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Publish](https://github.com/alanpaul1969/shanghanlun-assistant/actions/workflows/publish.yml/badge.svg)](https://github.com/alanpaul1969/shanghanlun-assistant/actions/workflows/publish.yml)
+
 以《傷寒論》六經辨證為骨架的臨床決策支援 WebUI：八綱快診 → 六經定位 → LLM 追問 → 方證推論 → 醫囑選方 → 服藥觀察 → 加減/救逆。
 
 ## 功能（v0.6.1）
@@ -15,10 +20,14 @@
 ## 執行
 
 ```bash
-cd webui
-pip install flask
-python3 app.py   # :8501, http://localhost:8501/shanghanlun/
+pip install shanghanlun-assistant   # 或 clone 後: cd webui && pip install flask
+python3 -m webui.app                # :8501, http://localhost:8501/shanghanlun/
 ```
+
+## 發版 SOP
+
+改 `pyproject.toml` 的 `version` → commit → `git tag vX.Y.Z && git push origin vX.Y.Z`
+→ GitHub Actions 經 Trusted Publisher 自動發布到 PyPI（app 的版號會自動讀套件 metadata）。
 
 LLM 端點（可選，無則規則引擎獨立運作）：llama.cpp :8080（主模型）、:8085 thinking-off proxy、:8082 jina embeddings。
 RAG 語料重建：`corpus/build_rag.py`（需先 clone TCM-Ancient-Books，見 script 內說明）。
