@@ -430,3 +430,17 @@ footer { text-align: center; padding: var(--space-5); color: var(--text-muted); 
   .prescription-card .name { font-size: 18px; }
   .prescription-card .match .pct { font-size: 24px; }
 }
+
+
+/* v0.6.2: 窄螢幕 nav 橫向滑動 — 所有項目可達 */
+.app-nav nav {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.app-nav nav::-webkit-scrollbar { display: none; }
+.app-nav nav a { white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 640px) {
+  .app-nav { padding: var(--space-2) var(--space-3); }
+}
