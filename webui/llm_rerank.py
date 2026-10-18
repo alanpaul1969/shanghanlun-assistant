@@ -15,8 +15,7 @@ import re
 import urllib.request
 from pathlib import Path
 
-LLM_BASE = "http://127.0.0.1:8085"  # thinking-off proxy, 快
-LLM_MODEL = "qwen3.8-27b-nvfp4"  # 對應 llama.cpp server model alias
+from llm_config import get_llm
 TIMEOUT_S = 45
 
 
@@ -55,7 +54,7 @@ def rerank_by_llm(symptoms_summary: str, prescriptions: list, meridian_top: str,
 """
 
     payload = {
-        "model": LLM_MODEL,
+        "model": get_llm()[1],
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.3,
         "max_tokens": 200,
@@ -63,7 +62,7 @@ def rerank_by_llm(symptoms_summary: str, prescriptions: list, meridian_top: str,
     }
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
-        f"{LLM_BASE}/v1/chat/completions",
+        f"{get_llm()[0]}/v1/chat/completions",
         data=body,
         headers={"Content-Type": "application/json"},
         method="POST",

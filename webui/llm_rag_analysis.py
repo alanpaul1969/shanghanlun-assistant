@@ -9,9 +9,8 @@ LLM 做:
 import json
 import re
 import urllib.request
+from llm_config import get_llm
 
-LLM_BASE = "http://127.0.0.1:8085"
-LLM_MODEL = "qwen3.8-27b-nvfp4"
 TIMEOUT_S = 60
 
 
@@ -46,7 +45,7 @@ def analyze_prescription(prescription: dict, rag_hits: list, symptoms_summary: s
 {{"relevance": "...", "suggestions": [{{"type": "加", "item": "厚朴、杏子", "reason": "喘者加...", "source": "金匱要略·..."}}, ...]}}
 """
     payload = {
-        "model": LLM_MODEL,
+        "model": get_llm()[1],
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2,
         "max_tokens": 900,
@@ -54,7 +53,7 @@ def analyze_prescription(prescription: dict, rag_hits: list, symptoms_summary: s
     }
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
-        f"{LLM_BASE}/v1/chat/completions",
+        f"{get_llm()[0]}/v1/chat/completions",
         data=body,
         headers={"Content-Type": "application/json"},
         method="POST",

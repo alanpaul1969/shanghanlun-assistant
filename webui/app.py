@@ -1176,11 +1176,42 @@ def img(filename):
     return send_from_directory(str(IMG_DIR), filename)
 
 
-APP_VERSION = "0.5.1"
+APP_VERSION = "0.6.0"
 
 @app.context_processor
 def _inject_version():
     return {"app_version": APP_VERSION}
+
+# ── v0.6 設定: LLM/VLM 後端選擇 ──────────────────────
+@app.route("/settings", methods=["GET", "POST"])
+def settings_page():
+    import llm_config
+    from settings_store import set as sset, get as sget
+    probes = {}
+    if request.method == "POST":
+        sset("llm_backend", request.form.get("llm_backend", "proxy8085"))
+        sset("vlm_backend", request.form.get("vlm_backend", "proxy8085"))
+        sset("llm_custom_base", request.form.get("llm_custom_base", "").strip())
+        sset("llm_custom_model", request.form.get("llm_custom_model", "").strip())
+        sset("vlm_custom_base", request.form.get("vlm_custom_base", "").strip())
+        sset("vlm_custom_model", request.form.get("vlm_custom_model", "").strip())
+        return redirect(url_for("settings_page"))
+    for p_ in [x["base"] for x in llm_config.LLM_PRESETS] + [x["base"] for x in llm_config.VLM_PRESETS] +               [sget("llm_custom_base", ""), sget("vlm_custom_base", "")]:
+        if p_ and p_ not in probes:
+            probes[p_] = llm_config.probe(p_)
+    return render_template(
+        "settings.html",
+        llm_presets=llm_config.LLM_PRESETS,
+        vlm_presets=llm_config.VLM_PRESETS,
+        llm_sel=sget("llm_backend", "proxy8085"),
+        vlm_sel=sget("vlm_backend", "proxy8085"),
+        llm_custom=(sget("llm_custom_base", ""), sget("llm_custom_model", "")),
+        vlm_custom=(sget("vlm_custom_base", ""), sget("vlm_custom_model", "")),
+        probes=probes,
+        llm_now=llm_config.get_llm(),
+        vlm_now=llm_config.get_vlm(),
+    )
+
 
 @app.route("/healthz")
 def healthz():

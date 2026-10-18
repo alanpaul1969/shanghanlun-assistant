@@ -13,8 +13,7 @@ import urllib.request
 
 from inference_engine import load_symptom_matrix
 
-LLM_BASE = "http://127.0.0.1:8085"
-LLM_MODEL = "qwen3.8-27b-nvfp4"
+from llm_config import get_llm
 TIMEOUT_S = 25
 
 _cache = None
@@ -56,7 +55,7 @@ def extract_chief_complaint(chief: str) -> dict:
 {{"symptoms": ["<代碼>", ...]}}
 """
     payload = {
-        "model": LLM_MODEL,
+        "model": get_llm()[1],
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.1,
         "max_tokens": 300,
@@ -64,7 +63,7 @@ def extract_chief_complaint(chief: str) -> dict:
     }
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
-        f"{LLM_BASE}/v1/chat/completions",
+        f"{get_llm()[0]}/v1/chat/completions",
         data=body,
         headers={"Content-Type": "application/json"},
         method="POST",

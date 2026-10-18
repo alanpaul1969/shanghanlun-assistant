@@ -12,8 +12,8 @@
 import json
 import base64
 import urllib.request
+from llm_config import get_vlm
 
-LLM_BASE = "http://127.0.0.1:8085"
 TIMEOUT_S = 300  # 加大: 其他 agent 共用 8080, 排隊可能慢
 
 PROMPT = """你是中醫舌診專家。請分析這張舌頭照片，依中醫舌診標準輸出：
@@ -63,7 +63,7 @@ def analyze_tongue_photo(image_path: str) -> dict:
     }
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
-        f"{LLM_BASE}/v1/chat/completions",
+        f"{get_vlm()[0]}/v1/chat/completions",
         data=body,
         headers={"Content-Type": "application/json"},
         method="POST",
