@@ -1,0 +1,22 @@
+{
+  "name": "shanghanlun-assistant",
+  "version": "0.6.2",
+  "description": "傷寒論臨床決策輔助 WebUI (Python/Flask) — npm 包僅為名稱保留與版本提示, 實體請用 pip install shanghanlun-assistant",
+  "bin": {
+    "shanghanlun-assistant": "./cli.js"
+  },
+  "files": [
+    "cli.js"
+  ],
+  "keywords": [
+    "tcm",
+    "shanghanlun",
+    "chinese-medicine",
+    "clinical-decision"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alanpaul1969/shanghanlun-assistant"
+  }
+}
