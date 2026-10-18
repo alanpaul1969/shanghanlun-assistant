@@ -65,7 +65,7 @@ def extract_chief_complaint(chief: str) -> dict:
     req = urllib.request.Request(
         f"{get_llm()[0]}/v1/chat/completions",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **({"Authorization": "Bearer " + get_llm()[2]} if get_llm()[2] else {})},
         method="POST",
     )
     try:

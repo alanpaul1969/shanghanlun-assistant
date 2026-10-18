@@ -65,7 +65,7 @@ def analyze_tongue_photo(image_path: str) -> dict:
     req = urllib.request.Request(
         f"{get_vlm()[0]}/v1/chat/completions",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **({"Authorization": "Bearer " + get_vlm()[2]} if get_vlm()[2] else {})},
         method="POST",
     )
     try:

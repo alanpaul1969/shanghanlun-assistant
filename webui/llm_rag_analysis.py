@@ -55,7 +55,7 @@ def analyze_prescription(prescription: dict, rag_hits: list, symptoms_summary: s
     req = urllib.request.Request(
         f"{get_llm()[0]}/v1/chat/completions",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **({"Authorization": "Bearer " + get_llm()[2]} if get_llm()[2] else {})},
         method="POST",
     )
     try:

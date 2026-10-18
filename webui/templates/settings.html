@@ -27,6 +27,11 @@
         <input name="llm_custom_model" value="{{ llm_custom[1] }}" placeholder="model 名稱"
                style="flex: 1; min-width: 140px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);">
       </div>
+      <div style="margin-top: 6px;">
+        <strong>API Key</strong>（雲端端點用；{{ "已設定，留空不變更" if llm_key_set else "選雲端端點時必填" }}）
+        <input name="llm_api_key" type="password" placeholder="sk-..."
+               style="width: 100%; max-width: 420px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-top: 4px;">
+      </div>
       {% if llm_custom[0] %}<span class="muted" style="font-size: 11px;">probe: {{ probes.get(llm_custom[0], '?') }}</span>{% endif %}
     </div>
   </div>
@@ -50,6 +55,11 @@
                style="flex: 2; min-width: 220px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);">
         <input name="vlm_custom_model" value="{{ vlm_custom[1] }}" placeholder="model 名稱"
                style="flex: 1; min-width: 140px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);">
+      </div>
+      <div style="margin-top: 6px;">
+        <strong>API Key</strong>（{{ "已設定，留空不變更" if vlm_key_set else "選雲端端點時必填" }}）
+        <input name="vlm_api_key" type="password" placeholder="sk-..."
+               style="width: 100%; max-width: 420px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-top: 4px;">
       </div>
       {% if vlm_custom[0] %}<span class="muted" style="font-size: 11px;">probe: {{ probes.get(vlm_custom[0], '?') }}</span>{% endif %}
     </div>

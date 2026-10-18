@@ -68,11 +68,14 @@ def get_embed():
 
 
 def get_llm():
-    return _resolve("llm")
+    """回 (base, model, api_key) — 自訂雲端端點用"""
+    base, model = _resolve("llm")
+    return base, model, get("llm_api_key", "")
 
 
 def get_vlm():
-    return _resolve("vlm")
+    base, model = _resolve("vlm")
+    return base, model, get("vlm_api_key", "")
 
 
 def probe(base):

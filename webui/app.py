@@ -1201,6 +1201,11 @@ def settings_page():
         sset("llm_custom_model", request.form.get("llm_custom_model", "").strip())
         sset("vlm_custom_base", request.form.get("vlm_custom_base", "").strip())
         sset("vlm_custom_model", request.form.get("vlm_custom_model", "").strip())
+        # API key: 留空 = 不變更 (避免每次儲存都要重貼)
+        if request.form.get("llm_api_key", "").strip():
+            sset("llm_api_key", request.form.get("llm_api_key").strip())
+        if request.form.get("vlm_api_key", "").strip():
+            sset("vlm_api_key", request.form.get("vlm_api_key").strip())
         sset("embed_custom_base", request.form.get("embed_custom_base", "").strip())
         sset("embed_custom_model", request.form.get("embed_custom_model", "").strip())
         sset("embed_api_key", request.form.get("embed_api_key", "").strip())
@@ -1220,6 +1225,8 @@ def settings_page():
         vlm_sel=sget("vlm_backend", "proxy8085"),
         llm_custom=(sget("llm_custom_base", ""), sget("llm_custom_model", "")),
         vlm_custom=(sget("vlm_custom_base", ""), sget("vlm_custom_model", "")),
+        llm_key_set=bool(sget("llm_api_key", "")),
+        vlm_key_set=bool(sget("vlm_api_key", "")),
         probes=probes,
         llm_now=llm_config.get_llm(),
         vlm_now=llm_config.get_vlm(),

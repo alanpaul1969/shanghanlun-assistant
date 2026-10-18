@@ -24,8 +24,16 @@ pip install shanghanlun-assistant   # 或 clone 後: cd webui && pip install fla
 python3 -m webui.app                # :8501, http://localhost:8501/shanghanlun/
 ```
 
-LLM 端點（可選，無則規則引擎獨立運作）：llama.cpp :8080（主模型）、:8085 thinking-off proxy、:8082 jina embeddings。
-RAG 語料重建：`corpus/build_rag.py`（需先 clone TCM-Ancient-Books，見 script 內說明）。
+## LLM / VLM 後端（可選，webui 內可切換）
+
+所有 LLM 功能（主訴抽取、動態追問、方證 rerank、加減項分析）與舌診 VLM 都可在 **「⚙ 設定」頁**即時切換後端，任一後端無回應時自動安全降級（規則引擎獨立運作）：
+
+- **本機 llama.cpp**（預設）：`:8085` thinking-off proxy / `:8080` 直連 256K ctx / `:8083` Bonsai
+- **雲端 OpenAI 相容端點**：設定頁填自訂 `Base URL` + `model` 即可——例如 OpenAI（`https://api.openai.com/v1` + `gpt-4o-mini`）、DeepSeek（`https://api.deepseek.com/v1`）、OpenRouter（`https://openrouter.ai/api/v1` + 任意 model）等
+
+> API key 直接在設定頁的「API Key」欄填入（存 server-side SQLite，頁面只顯示「已設定」，留空不變更）。
+
+## RAG 語料（可選）
 
 ## RAG 語料（可選）
 
