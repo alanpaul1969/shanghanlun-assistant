@@ -19,8 +19,8 @@
       <a href="{{ url_for('inference') }}"        class="{% if request.path == '/inference' %}active{% endif %}">{{ t('推論') }}</a>
       <a href="{{ url_for('observe') }}"          class="{% if '/observe' in request.path %}active{% endif %}">{{ t('服藥觀察') }}</a>
       <a href="{{ url_for('library') }}"          class="{% if request.path == '/library' %}active{% endif %}">{{ t('Library') }}</a>
-      <a href="{{ url_for('history_page') }}"     class="{% if request.path == '/history' %}active{% endif %}">📋 歷史</a>
       <a href="{{ url_for('settings_page') }}"     class="{% if request.path == '/settings' %}active{% endif %}">⚙ 設定</a>
+      <a href="{{ url_for('history_page') }}"     class="{% if request.path == '/history' %}active{% endif %}">📋 歷史</a>
     </nav>
     <div style="display: flex; align-items: center; gap: var(--space-2);">
       <a href="{{ url_for('set_lang', lang='zh') }}" class="version-pill {% if session.get('lang', 'zh') == 'zh' %}active{% endif %}" style="font-size: 11px;">中</a>
