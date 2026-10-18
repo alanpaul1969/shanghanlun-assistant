@@ -33,10 +33,10 @@
   &nbsp;
   <a href="{{ url_for('intake_root') }}" class="btn btn-secondary btn-lg">📋 詳診 (完整 8 步)</a>
   &nbsp;
-  <a href="{{ url_for('intake_step', step='inquiry') }}" class="btn btn-ghost">查看進行中診次 →</a>
+  <a href="#sessions" class="btn btn-ghost">查看進行中診次 →</a>
 </div>
 
-<h2>目前診次</h2>
+<h2 id="sessions">目前診次</h2>
 {% if current_session %}
 <div class="session-list">
   <div class="card session-card" style="border-left: 4px solid var(--brand-500);">
@@ -57,7 +57,7 @@
 </div>
 {% endif %}
 
-<h2>範例診次 <span class="muted" style="font-size: 12px; font-weight: normal;">(展示用假資料, 非真實紀錄)</span></h2>
+<h2 id="demo-sessions">範例診次 <span class="muted" style="font-size: 12px; font-weight: normal;">(展示用假資料, 非真實紀錄)</span></h2>
 <div class="session-list">
   {% for s in active_sessions %}
   <div class="card session-card" style="opacity: 0.65;">

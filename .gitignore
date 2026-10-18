@@ -10,3 +10,6 @@ __pycache__/
 nohup.out
 .DS_Store
 corpus/rag_chunks.json
+build/
+*.egg-info/
+.github/workflows/
