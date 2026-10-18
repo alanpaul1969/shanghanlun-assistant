@@ -34,10 +34,14 @@ def available() -> bool:
 
 
 def _embed_query(text: str):
-    payload = json.dumps({"input": [text]}).encode("utf-8")
-    req = urllib.request.Request(
-        EMBED_URL, data=payload,
-        headers={"Content-Type": "application/json"}, method="POST")
+    from llm_config import get_embed
+    base, model, key = get_embed()
+    payload = json.dumps({"input": [text], "model": model}).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
+    req = urllib.request.Request(f"{base}/v1/embeddings", data=payload,
+        headers=headers, method="POST")
     with urllib.request.urlopen(req, timeout=30) as r:
         resp = json.loads(r.read())
     v = np.array(resp["data"][0]["embedding"], dtype=np.float32)

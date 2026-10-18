@@ -34,6 +34,22 @@ pip install -r requirements.txt   # numpy + opencc 一併裝
 
 不建置也能正常使用——RAG 相關面板自動隱藏，其餘功能不受影響。
 
+### Embedding 後端選擇（本機或雲端）
+
+到 webui 的「⚙ 設定」頁可切換：
+
+- **本機 `:8082`**（預設）：llama.cpp 跑 `jina-embeddings-v5-small-retrieval-Q8_0`，免金鑰、免費
+- **Jina AI 雲端**（建議給沒有本機 embedding server 的部署）：
+  建議模型 `jina-embeddings-v5-small-retrieval`（與本機同款）。
+  **申請方式**：
+  1. 到 [jina.ai](https://jina.ai/) → 右上 **Sign up**（Google / GitHub 登入即可，免信用卡）
+  2. 到 [jina.ai/api-key](https://jina.ai/api-key) 點 **Create API Key**，複製 `jina_xxxx...`
+  3. 貼進「⚙ 設定 → Embedding 後端 → Jina API Key」儲存
+  免費額度對建置整個七典語料（約 150 萬 tokens）綽綽有餘。
+- **自訂**：任何 OpenAI 相容 `/v1/embeddings` 端點
+
+建置腳本 `corpus/build_rag.py` 會自動讀 webui 設定頁的 embedding 設定，也可用環境變數覆蓋：`EMBED_URL` / `EMBED_MODEL` / `EMBED_KEY`。
+
 ## 授權
 
 Apache-2.0（見 LICENSE）。UI 素材由 MOSS-Image-SFT 生成（該模型 Apache-2.0）。

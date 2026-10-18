@@ -44,6 +44,29 @@ def _resolve(kind):
     return d["base"], d["model"]
 
 
+# v0.6.1: embedding 後端 (RAG 檢索用) — local :8082 或雲端 (建議 Jina)
+EMBED_PRESETS = [
+    {"id": "local8082", "name": "本機 :8082 jina-embeddings-v5-small（預設，免金鑰）",
+     "base": "http://127.0.0.1:8082", "model": "jina-embeedings-v5-small-retrieval-Q8_0", "key": ""},
+    {"id": "jina_cloud", "name": "Jina AI 雲端 API（建議模型 jina-embeddings-v5-small-retrieval，需金鑰）",
+     "base": "https://api.jina.ai/v1", "model": "jina-embeddings-v5-small-retrieval", "key": ""},
+]
+
+
+def get_embed():
+    """回 (base, model, api_key) — embedding 端點"""
+    sel = get("embed_backend", "local8082")
+    for p in EMBED_PRESETS:
+        if p["id"] == sel:
+            key = p["key"] or (get("jina_api_key", "") if sel == "jina_cloud" else "")
+            return p["base"], p["model"], key
+    base = get("embed_custom_base", "")
+    if base:
+        return base.rstrip("/"), get("embed_custom_model", "default"), get("embed_api_key", "")
+    d = EMBED_PRESETS[0]
+    return d["base"], d["model"], ""
+
+
 def get_llm():
     return _resolve("llm")
 

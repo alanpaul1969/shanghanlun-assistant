@@ -55,6 +55,38 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom: var(--space-3);">
+    <div class="card-title">🧲 Embedding 後端（七典 RAG 檢索）</div>
+    <p class="muted" style="font-size: 12px;">查詢向量即時生成；語料向量由 <code>corpus/setup_rag.sh</code> 一次性建置（建置時同樣讀此設定或環境變數）。</p>
+    {% for p in embed_presets %}
+    <label style="display: block; margin: 6px 0; cursor: pointer;">
+      <input type="radio" name="embed_backend" value="{{ p.id }}" {% if embed_sel == p.id %}checked{% endif %}>
+      {{ p.name }} — <code>{{ p.base }}</code>
+    </label>
+    {% endfor %}
+    {% if embed_sel == 'jina_cloud' %}
+    <div style="margin: 8px 0 0 24px; font-size: 13px;">
+      <strong>Jina API Key</strong>
+      <input name="jina_api_key" type="password" value="" placeholder="{{ '已設定（留空不變更）' if embed_key_set else 'jina_xxxx...' }}"
+             style="width: 100%; max-width: 420px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-top: 4px;">
+      <div class="muted" style="font-size: 11px; margin-top: 4px;">
+        申請：到 <a href="https://jina.ai/?utm=shanghanlun" target="_blank">jina.ai</a> → 右上「Sign up」免費註冊（Google/GitHub 登入即可）
+        → <a href="https://jina.ai/api-key" target="_blank">jina.ai/api-key</a> 點「Create API Key」即得（免信用卡，免費額度足夠建置整個七典語料綽綽有餘）。
+        建議模型：<code>jina-embeddings-v5-small-retrieval</code>（與本機 :8082 同款）。
+      </div>
+    </div>
+    {% endif %}
+    <div style="margin-top: var(--space-3); font-size: 13px;">
+      <strong>自訂端點</strong>（OpenAI 相容 /v1/embeddings）
+      <div style="display: flex; gap: var(--space-2); margin-top: 6px; flex-wrap: wrap;">
+        <input name="embed_custom_base" value="{{ embed_custom[0] }}" placeholder="https://api.example.com/v1"
+               style="flex: 2; min-width: 220px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);">
+        <input name="embed_custom_model" value="{{ embed_custom[1] }}" placeholder="model 名稱"
+               style="flex: 1; min-width: 140px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);">
+      </div>
+    </div>
+  </div>
+
   <button type="submit" class="btn btn-primary">儲存設定</button>
   <a href="{{ url_for('home') }}" class="btn btn-secondary">← 回首頁</a>
 </form>

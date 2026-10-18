@@ -1176,7 +1176,7 @@ def img(filename):
     return send_from_directory(str(IMG_DIR), filename)
 
 
-APP_VERSION = "0.6.0"
+APP_VERSION = "0.6.1"
 
 @app.context_processor
 def _inject_version():
@@ -1191,16 +1191,24 @@ def settings_page():
     if request.method == "POST":
         sset("llm_backend", request.form.get("llm_backend", "proxy8085"))
         sset("vlm_backend", request.form.get("vlm_backend", "proxy8085"))
+        sset("embed_backend", request.form.get("embed_backend", "local8082"))
         sset("llm_custom_base", request.form.get("llm_custom_base", "").strip())
         sset("llm_custom_model", request.form.get("llm_custom_model", "").strip())
         sset("vlm_custom_base", request.form.get("vlm_custom_base", "").strip())
         sset("vlm_custom_model", request.form.get("vlm_custom_model", "").strip())
+        sset("embed_custom_base", request.form.get("embed_custom_base", "").strip())
+        sset("embed_custom_model", request.form.get("embed_custom_model", "").strip())
+        sset("embed_api_key", request.form.get("embed_api_key", "").strip())
         return redirect(url_for("settings_page"))
     for p_ in [x["base"] for x in llm_config.LLM_PRESETS] + [x["base"] for x in llm_config.VLM_PRESETS] +               [sget("llm_custom_base", ""), sget("vlm_custom_base", "")]:
         if p_ and p_ not in probes:
             probes[p_] = llm_config.probe(p_)
     return render_template(
         "settings.html",
+        embed_presets=llm_config.EMBED_PRESETS,
+        embed_sel=sget("embed_backend", "local8082"),
+        embed_custom=(sget("embed_custom_base", ""), sget("embed_custom_model", "")),
+        embed_key_set=bool(sget("jina_api_key", "")),
         llm_presets=llm_config.LLM_PRESETS,
         vlm_presets=llm_config.VLM_PRESETS,
         llm_sel=sget("llm_backend", "proxy8085"),

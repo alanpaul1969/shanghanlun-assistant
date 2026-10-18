@@ -28,7 +28,22 @@ HERE = Path(__file__).parent
 SRC = HERE / "tcm-ancient-books"
 OUT_CHUNKS = HERE / "rag_chunks.json"
 OUT_VECS = HERE / "rag_vectors.npy"
-EMBED_URL = "http://127.0.0.1:8082/v1/embeddings"
+# v0.6.1: embedding 端點可由 env 覆蓋 (EMBED_URL/EMBED_MODEL/EMBED_KEY)，
+# 或讀 webui 的設定 (llm_config.get_embed)。預設本機 :8082。
+import os as _os
+EMBED_URL = _os.environ.get("EMBED_URL", "http://127.0.0.1:8082/v1/embeddings")
+EMBED_MODEL = _os.environ.get("EMBED_MODEL", "")
+EMBED_KEY = _os.environ.get("EMBED_KEY", "")
+try:
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "webui"))
+    from llm_config import get_embed as _get_embed
+    _b, _m, _k = _get_embed()
+    EMBED_URL = _os.environ.get("EMBED_URL", _b.rstrip("/") + "/v1/embeddings")
+    EMBED_MODEL = _os.environ.get("EMBED_MODEL", _m)
+    EMBED_KEY = _os.environ.get("EMBED_KEY", _k)
+except Exception:
+    pass
 
 BOOKS = {
     "金匱要略": ["499-金匮要略方论.txt", "500-金匮要略心典.txt"],
@@ -86,10 +101,16 @@ def parse_book(path: Path, book: str):
 
 
 def _embed_one(text):
-    payload = json.dumps({"input": [text[:900]]}).encode("utf-8")
+    payload = {"input": [text[:900]]}
+    if EMBED_MODEL:
+        payload["model"] = EMBED_MODEL
+    _headers = {"Content-Type": "application/json"}
+    if EMBED_KEY:
+        _headers["Authorization"] = f"Bearer {EMBED_KEY}"
+    payload = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         EMBED_URL, data=payload,
-        headers={"Content-Type": "application/json"}, method="POST")
+        headers=_headers, method="POST")
     with urllib.request.urlopen(req, timeout=60) as r:
         resp = json.loads(r.read())
     return resp["data"][0]["embedding"]
@@ -101,10 +122,16 @@ def embed(texts, batch=32):
     n_fail = 0
     for i in range(0, len(texts), batch):
         bt = [t[:900] for t in texts[i:i + batch]]
-        payload = json.dumps({"input": bt}).encode("utf-8")
+        payload = {"input": bt}
+        if EMBED_MODEL:
+            payload["model"] = EMBED_MODEL
+        _headers = {"Content-Type": "application/json"}
+        if EMBED_KEY:
+            _headers["Authorization"] = f"Bearer {EMBED_KEY}"
+        payload = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         req = urllib.request.Request(
             EMBED_URL, data=payload,
-            headers={"Content-Type": "application/json"}, method="POST")
+            headers=_headers, method="POST")
         vs = None
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
