@@ -19,10 +19,14 @@
 
 ## 執行
 
+主要安裝方式是 **pip**（Python/Flask 應用）：
+
 ```bash
 pip install shanghanlun-assistant   # 或 clone 後: cd webui && pip install flask
 python3 -m webui.app                # :8501, http://localhost:8501/shanghanlun/
 ```
+
+> npm 上也有 `shanghanlun-assistant` 包，但那只是**名稱保留 + 安裝提示**（執行 `npx shanghanlun-assistant` 會顯示 pip 安裝說明），不是可執行的 Node.js 程式。
 
 ## LLM / VLM 後端（可選，webui 內可切換）
 
