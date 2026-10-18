@@ -1,0 +1,7 @@
+# 核心必裝
+flask>=3.0
+pillow>=10.0          # 舌診照片處理
+
+# 七典 RAG（corpus/build_rag.py + rag_search.py 需要; 不裝也能跑, RAG 面板自動隱藏）
+numpy>=1.26
+opencc-python-reimplemented>=0.1.7   # 簡→繁轉換 (build_rag.py 用)

@@ -23,7 +23,18 @@ python3 app.py   # :8501, http://localhost:8501/shanghanlun/
 LLM 端點（可選，無則規則引擎獨立運作）：llama.cpp :8080（主模型）、:8085 thinking-off proxy、:8082 jina embeddings。
 RAG 語料重建：`corpus/build_rag.py`（需先 clone TCM-Ancient-Books，見 script 內說明）。
 
+## RAG 語料（可選）
+
+語料檔（246MB 古籍 clone + embedding 向量）不入 git，由腳本重建：
+
+```bash
+pip install -r requirements.txt   # numpy + opencc 一併裝
+./corpus/setup_rag.sh             # clone 古籍庫 → 切塊繁化 → embedding
+```
+
+不建置也能正常使用——RAG 相關面板自動隱藏，其餘功能不受影響。
+
 ## 授權
 
-App 程式碼：待定（TBD）。UI 素材由 MOSS-Image-SFT 生成（該模型 Apache-2.0）。
+Apache-2.0（見 LICENSE）。UI 素材由 MOSS-Image-SFT 生成（該模型 Apache-2.0）。
 七典文本來源：[TCM-Ancient-Books](https://github.com/xiaopangxia/TCM-Ancient-Books)（古籍公有領域）。
